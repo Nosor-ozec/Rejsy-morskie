@@ -1,0 +1,18 @@
+# Duże dane lokalne
+local-data/
+data/
+outputs/
+
+# Sea-router / Rust
+target/
+*.exe
+sea-graph*.json
+*.gz
+
+# Pliki tymczasowe Windows
+Thumbs.db
+Desktop.ini
+
+# Edytory
+.vscode/
+.idea/
