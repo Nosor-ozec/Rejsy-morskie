@@ -7,7 +7,20 @@ outputs/
 target/
 *.exe
 sea-graph*.json
+*.pbf
+*.osm
 *.gz
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Pliki robocze i wynikowe
+*.tmp
+~$*.xlsx
 
 # Pliki tymczasowe Windows
 Thumbs.db
