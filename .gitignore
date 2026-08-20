@@ -21,6 +21,8 @@ __pycache__/
 # Pliki robocze i wynikowe
 *.tmp
 ~$*.xlsx
+routes/*.xlsx
+tests/_work/
 
 # Pliki tymczasowe Windows
 Thumbs.db
@@ -29,3 +31,4 @@ Desktop.ini
 # Edytory
 .vscode/
 .idea/
+

@@ -4,11 +4,32 @@ from xml.etree.ElementTree import Element, SubElement, ElementTree
 
 from .models import Leg, PortCall, Voyage
 
+NAMED_COLORS = {
+    "biały": "FFFFFF",
+    "czarny": "000000",
+    "czerwony": "D32F2F",
+    "fioletowy": "6A1B9A",
+    "niebieski": "0057B8",
+    "pomarańczowy": "EF6C00",
+    "szary": "757575",
+    "zielony": "2E7D32",
+    "żółty": "F9A825",
+}
+
 
 def kml_color(rgb: str) -> str:
-    value = rgb.removeprefix("#")
+    normalized = rgb.strip().casefold()
+    value = NAMED_COLORS.get(normalized, rgb.removeprefix("#"))
     if len(value) != 6:
-        raise ValueError("Kolor trasy musi mieć format #RRGGBB")
+        raise ValueError(
+            "Kolor trasy musi być nazwą, np. Niebieski, albo mieć format #RRGGBB"
+        )
+    try:
+        int(value, 16)
+    except ValueError as error:
+        raise ValueError(
+            "Kolor trasy musi być nazwą, np. Niebieski, albo mieć format #RRGGBB"
+        ) from error
     return "ff" + value[4:6] + value[2:4] + value[0:2]
 
 
@@ -52,3 +73,4 @@ def export_kml(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     ElementTree(root).write(output_path, encoding="utf-8", xml_declaration=True)
+
