@@ -32,11 +32,12 @@ class SeaRouterTests(unittest.TestCase):
             }
 
         router = HttpSeaRouter(fetch_json=fetch)
-        result = router.route(42.64, 18.09, 37.50, 15.09)
+        result = router.route(42.64, 18.09, 37.50, 15.09, penalty=8)
 
         self.assertEqual(len(result.geometry["coordinates"]), 3)
         self.assertAlmostEqual(result.distance_nm, 120.1, places=1)
         self.assertIn("from=18.09%2C42.64", requested["url"])
+        self.assertIn("penalty=8", requested["url"])
 
 
 if __name__ == "__main__":
