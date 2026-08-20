@@ -16,7 +16,7 @@ Jeden wiersz opisuje jeden rejs.
 | Nazwa_rejsu | tak | tekst | Nazwa widoczna w wynikach i KML. |
 | Data_startu | tak | data | Pierwszy dzień rejsu. |
 | Kolor_trasy | nie | tekst | Kolor `#RRGGBB` albo polska nazwa, np. `Niebieski`; domyślnie `#0057B8`. |
-| CA | nie | tekst | Pole użytkownika; program zachowuje je bez interpretacji. |
+| CA | nie | liczba dodatnia | Siła odsunięcia trasy od wybrzeża przekazywana do sea-routera; puste = domyślnie 5, większa wartość daje zwykle większy odstęp, np. `8`. |
 | Uwagi | nie | tekst | Notatki dotyczące całego rejsu. |
 
 ## Arkusz Porty
@@ -100,7 +100,7 @@ Program nie powinien modyfikować pliku wejściowego w miejscu. Domyślny wynik 
 
 ## Sea-router i eksport
 
-Adapter sea-routera otrzymuje współrzędne początku i końca, a zwraca linię GeoJSON i opcjonalnie dystans. Graf routingu i dane OSM są lokalną zależnością, nie częścią repozytorium.
+Adapter sea-routera otrzymuje współrzędne początku i końca oraz opcjonalny parametr `CA`, a zwraca linię GeoJSON i opcjonalnie dystans. Graf routingu i dane OSM są lokalną zależnością, nie częścią repozytorium.
 
 Dystans jest liczony z końcowej linii GeoJSON metodą haversine i zapisywany w milach morskich. Dzięki temu nie zależy od wewnętrznego kosztu grafu routingu.
 
