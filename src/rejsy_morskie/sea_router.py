@@ -16,7 +16,13 @@ class RouteResult:
 
 class SeaRouter(Protocol):
     def route(
-        self, start_lat: float, start_lon: float, end_lat: float, end_lon: float
+        self,
+        start_lat: float,
+        start_lon: float,
+        end_lat: float,
+        end_lon: float,
+        *,
+        penalty: float | None = None,
     ) -> RouteResult: ...
 
 
@@ -24,7 +30,13 @@ class NotConfiguredSeaRouter:
     """Jawny placeholder do czasu wyboru lokalnego sea-routera i jego CLI/API."""
 
     def route(
-        self, start_lat: float, start_lon: float, end_lat: float, end_lon: float
+        self,
+        start_lat: float,
+        start_lon: float,
+        end_lat: float,
+        end_lon: float,
+        *,
+        penalty: float | None = None,
     ) -> RouteResult:
         raise RuntimeError(
             "Sea-router nie jest skonfigurowany. Dodaj adapter lokalnego CLI/API."
@@ -48,13 +60,19 @@ class HttpSeaRouter:
         self.fetch_json = fetch_json or _fetch_json
 
     def route(
-        self, start_lat: float, start_lon: float, end_lat: float, end_lon: float
+        self,
+        start_lat: float,
+        start_lon: float,
+        end_lat: float,
+        end_lon: float,
+        *,
+        penalty: float | None = None,
     ) -> RouteResult:
         params = urllib.parse.urlencode(
             {
                 "from": f"{start_lon},{start_lat}",
                 "to": f"{end_lon},{end_lat}",
-                "penalty": self.penalty,
+                "penalty": self.penalty if penalty is None else penalty,
             }
         )
         payload = self.fetch_json(

@@ -63,7 +63,13 @@ def export_kml(
     for leg, coordinates in legs_with_coordinates:
         marker = SubElement(legs_folder, "Placemark")
         SubElement(marker, "name").text = leg.name
-        SubElement(marker, "description").text = leg.day_range
+        description = [
+            leg.day_range,
+            f"{leg.date_from.isoformat()} – {leg.date_to.isoformat()}",
+        ]
+        if leg.distance_nm is not None:
+            description.append(f"Dystans: {leg.distance_nm:.1f} mil morskich")
+        SubElement(marker, "description").text = "\n".join(description)
         SubElement(marker, "styleUrl").text = "#route"
         line = SubElement(marker, "LineString")
         SubElement(line, "tessellate").text = "1"

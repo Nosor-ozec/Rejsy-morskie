@@ -2,6 +2,7 @@ import unittest
 from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
+from xml.etree import ElementTree
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -19,7 +20,11 @@ class FakeProvider:
 
 
 class FakeRouter:
-    def route(self, start_lat, start_lon, end_lat, end_lon):
+    def __init__(self):
+        self.penalties = []
+
+    def route(self, start_lat, start_lon, end_lat, end_lon, *, penalty=None):
+        self.penalties.append(penalty)
         return RouteResult(
             geometry={
                 "type": "LineString",
@@ -43,8 +48,9 @@ class PipelineTests(unittest.TestCase):
             output_dir = root / "outputs"
             self._make_workbook(input_path)
             geocoder = CachedGeocoder(FakeProvider(), root / "cache.json")
+            router = FakeRouter()
 
-            outputs = generate_routes(input_path, output_dir, geocoder, FakeRouter())
+            outputs = generate_routes(input_path, output_dir, geocoder, router)
 
             workbook_path = output_dir / "rejs-uzupelniony.xlsx"
             workbook = load_workbook(workbook_path, data_only=True)
@@ -62,6 +68,16 @@ class PipelineTests(unittest.TestCase):
             self.assertTrue((output_dir / "R1" / "trasa.kml").exists())
             self.assertTrue((output_dir / "R1" / "geojson" / "01-A-B.geojson").exists())
             self.assertEqual(outputs[0], workbook_path)
+            self.assertEqual(router.penalties, [8.0])
+
+            kml = ElementTree.parse(output_dir / "R1" / "trasa.kml")
+            namespace = {"kml": "http://www.opengis.net/kml/2.2"}
+            line_coordinates = kml.find(
+                ".//kml:Folder[kml:name='Etapy']//kml:LineString/kml:coordinates",
+                namespace,
+            )
+            self.assertIsNotNone(line_coordinates)
+            self.assertEqual(line_coordinates.text, "18.0,42.0,0 16.0,40.0,0")
 
     @staticmethod
     def _make_workbook(path: Path) -> None:
@@ -71,7 +87,7 @@ class PipelineTests(unittest.TestCase):
         rejsy.append(
             ["Rejs_ID", "Nazwa_rejsu", "Data_startu", "Kolor_trasy", "CA", "Uwagi"]
         )
-        rejsy.append(["R1", "Test", "2024-12-07", "#0057B8", None, None])
+        rejsy.append(["R1", "Test", "2024-12-07", "#0057B8", 8, None])
 
         porty = workbook.create_sheet("Porty")
         porty.append(

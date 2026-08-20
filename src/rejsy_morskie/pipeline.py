@@ -47,6 +47,7 @@ def generate_routes(
     for voyage_id, voyage in voyages.items():
         voyage_calls = sorted(calls_by_voyage[voyage_id], key=lambda item: item.order)
         legs = calculate_schedule(voyage, voyage_calls)
+        coastal_penalty = _coastal_penalty(voyage.ca)
         voyage_dir = output_dir / _safe_name(voyage_id)
         geojson_dir = voyage_dir / "geojson"
         kml_legs: list[tuple[Leg, list[tuple[float, float]]]] = []
@@ -56,8 +57,14 @@ def generate_routes(
                 leg.status = "brak_wspolrzednych"
                 continue
             try:
-                result = sea_router.route(start.lat, start.lon, end.lat, end.lon)
-                coordinates = _coordinates_lat_lon(result.geometry)
+                result = sea_router.route(
+                    start.lat,
+                    start.lon,
+                    end.lat,
+                    end.lon,
+                    penalty=coastal_penalty,
+                )
+                coordinates = _coordinates_lon_lat(result.geometry)
                 geojson_path = geojson_dir / f"{leg.number:02d}-{_safe_name(leg.name)}.geojson"
                 _write_geojson(geojson_path, leg, result.geometry, result.distance_nm)
                 leg.distance_nm = (
@@ -82,7 +89,7 @@ def generate_routes(
     return [workbook_path, *output_paths]
 
 
-def _coordinates_lat_lon(geometry: dict[str, object]) -> list[tuple[float, float]]:
+def _coordinates_lon_lat(geometry: dict[str, object]) -> list[tuple[float, float]]:
     if geometry.get("type") != "LineString" or not isinstance(
         geometry.get("coordinates"), list
     ):
@@ -91,7 +98,7 @@ def _coordinates_lat_lon(geometry: dict[str, object]) -> list[tuple[float, float
     for point in geometry["coordinates"]:
         if not isinstance(point, (list, tuple)) or len(point) < 2:
             raise ValueError("Sea-router zwrócił niepoprawny punkt GeoJSON")
-        result.append((float(point[1]), float(point[0])))
+        result.append((float(point[0]), float(point[1])))
     if len(result) < 2:
         raise ValueError("Trasa musi zawierać co najmniej dwa punkty")
     return result
@@ -123,3 +130,15 @@ def _write_geojson(
 def _safe_name(value: str) -> str:
     normalized = re.sub(r"[^0-9A-Za-zÀ-ž._-]+", "-", value.strip())
     return normalized.strip("-._") or "rejs"
+
+
+def _coastal_penalty(value: str | None) -> float | None:
+    if value is None or not value.strip():
+        return None
+    try:
+        penalty = float(value.replace(",", "."))
+    except ValueError as error:
+        raise ValueError("CA musi być dodatnią liczbą, np. 5 albo 8") from error
+    if penalty <= 0:
+        raise ValueError("CA musi być dodatnią liczbą, np. 5 albo 8")
+    return penalty
