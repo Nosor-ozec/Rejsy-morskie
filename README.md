@@ -18,8 +18,9 @@ Pełna definicja kolumn i reguł: [docs/specyfikacja-excel.md](docs/specyfikacja
 
 ## Najważniejsze zasady
 
-- `Kiedy=+N` oznacza wpływ do portu w N-tym dniu rejsu.
-- Konkretna data w `Kiedy` jest przeliczana względem `Data_startu`; dzień startu to dzień 1.
+- Liczba `N` w `Kiedy` oznacza wpływ do portu `N` dni po `Data_startu`; `0` oznacza datę startu. Zapis `+N` jest akceptowany dla zgodności wstecznej.
+- Konkretna data w `Kiedy` jest punktem kontrolnym harmonogramu; dzień startu ma w wynikach numer 1.
+- W `Porty` puste `Rejs_ID` oznacza tę samą wartość co w poprzednim niepustym wierszu.
 - Puste `Postoj_dni` oznacza 1.
 - `Lat` i `Lon` są opcjonalne. Program korzysta z nich, a brakujące wartości pobiera i utrwala w wynikowym skoroszycie.
 - Niejednoznacznego portu program nie wybiera automatycznie — wymaga zatwierdzenia.
@@ -60,3 +61,4 @@ Plik XLSX nie jest jeszcze przechowywany w repozytorium; układ przykładu jest 
 ## Duże dane
 
 Do repozytorium nie trafiają lokalne dane OSM, grafy routingu ani wygenerowane wyniki. Domyślne miejsca to `local-data/`, `data/` i `outputs/`.
+

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable
 
@@ -23,15 +22,15 @@ ETAPY_COLUMNS = [
 ]
 
 
-def _rows(sheet) -> Iterable[dict[str, object]]:
+def _rows(sheet) -> Iterable[tuple[int, dict[str, object]]]:
     values = sheet.iter_rows(values_only=True)
     try:
         headers = [str(value).strip() if value is not None else "" for value in next(values)]
     except StopIteration:
         return
-    for row in values:
+    for excel_row, row in enumerate(values, start=2):
         if any(value is not None for value in row):
-            yield dict(zip(headers, row))
+            yield excel_row, dict(zip(headers, row))
 
 
 def _require_columns(sheet, expected: set[str]) -> None:
@@ -39,6 +38,19 @@ def _require_columns(sheet, expected: set[str]) -> None:
     missing = expected - headers
     if missing:
         raise ValueError(f"Arkusz {sheet.title}: brak kolumn {sorted(missing)}")
+
+
+def _inherit_voyage_id(
+    value: object, previous_voyage_id: str | None, excel_row: int
+) -> str:
+    entered_id = str(value).strip() if value is not None else ""
+    if entered_id:
+        return entered_id
+    if previous_voyage_id is None:
+        raise ValueError(
+            f"Porty, wiersz {excel_row}: pierwszy Rejs_ID nie może być pusty"
+        )
+    return previous_voyage_id
 
 
 def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
@@ -51,7 +63,7 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
     _require_columns(workbook["Porty"], PORTY_COLUMNS)
 
     voyages: dict[str, Voyage] = {}
-    for row in _rows(workbook["Rejsy"]):
+    for _, row in _rows(workbook["Rejsy"]):
         voyage_id = str(row["Rejs_ID"]).strip()
         if voyage_id in voyages:
             raise ValueError(f"Powtórzony Rejs_ID: {voyage_id}")
@@ -65,10 +77,16 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
         )
 
     calls: list[PortCall] = []
-    for row in _rows(workbook["Porty"]):
-        voyage_id = str(row["Rejs_ID"]).strip()
+    inherited_voyage_id: str | None = None
+    for excel_row, row in _rows(workbook["Porty"]):
+        inherited_voyage_id = _inherit_voyage_id(
+            row["Rejs_ID"], inherited_voyage_id, excel_row
+        )
+        voyage_id = inherited_voyage_id
         if voyage_id not in voyages:
-            raise ValueError(f"Nieznany Rejs_ID w Porty: {voyage_id}")
+            raise ValueError(
+                f"Porty, wiersz {excel_row}: nieznany Rejs_ID {voyage_id}"
+            )
         lat, lon = row["Lat"], row["Lon"]
         if (lat is None) != (lon is None):
             raise ValueError(f"Port {row['Port']}: Lat i Lon muszą występować razem")
