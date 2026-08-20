@@ -15,7 +15,7 @@ Jeden wiersz opisuje jeden rejs.
 | Rejs_ID | tak | tekst | Unikalny identyfikator, np. `R2026-01`. |
 | Nazwa_rejsu | tak | tekst | Nazwa widoczna w wynikach i KML. |
 | Data_startu | tak | data | Pierwszy dzień rejsu. |
-| Kolor_trasy | nie | tekst | Kolor `#RRGGBB`; domyślnie `#0057B8`. |
+| Kolor_trasy | nie | tekst | Kolor `#RRGGBB` albo polska nazwa, np. `Niebieski`; domyślnie `#0057B8`. |
 | CA | nie | tekst | Pole użytkownika; program zachowuje je bez interpretacji. |
 | Uwagi | nie | tekst | Notatki dotyczące całego rejsu. |
 
@@ -94,11 +94,15 @@ Arkusz jest generowany od nowa przez program. Jeden wiersz odpowiada trasie pomi
 4. Wiele sensownych wyników powoduje status wymagający zatwierdzenia.
 5. Cache powinien przechowywać zapytanie, współrzędne, źródło i datę pobrania.
 
+Domyślna integracja korzysta z Nominatim/OpenStreetMap, ogranicza ruch do jednego zapytania na sekundę i zapisuje każdy zaakceptowany wynik w cache. Dane wymagają atrybucji: © OpenStreetMap contributors, ODbL.
+
 Program nie powinien modyfikować pliku wejściowego w miejscu. Domyślny wynik to `outputs/<Rejs_ID>/rejs-uzupelniony.xlsx`.
 
 ## Sea-router i eksport
 
 Adapter sea-routera otrzymuje współrzędne początku i końca, a zwraca linię GeoJSON i opcjonalnie dystans. Graf routingu i dane OSM są lokalną zależnością, nie częścią repozytorium.
+
+Dystans jest liczony z końcowej linii GeoJSON metodą haversine i zapisywany w milach morskich. Dzięki temu nie zależy od wewnętrznego kosztu grafu routingu.
 
 KML zawiera folder rejsu, punkty portów i osobne linie etapów. Kolor `#RRGGBB` jest konwertowany do formatu KML `aabbggrr`. Wynik musi dać się zaimportować do Google My Maps.
 

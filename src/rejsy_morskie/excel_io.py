@@ -106,18 +106,94 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
     return voyages, calls
 
 
-def write_legs(input_path: Path, output_path: Path, legs: list[Leg]) -> None:
+def write_results(
+    input_path: Path,
+    output_path: Path,
+    calls: list[PortCall],
+    legs: list[Leg],
+) -> None:
     workbook = load_workbook(input_path)
+    _write_port_coordinates(workbook["Porty"], calls)
     sheet = workbook["Etapy"]
-    sheet.delete_rows(1, sheet.max_row)
-    sheet.append(ETAPY_COLUMNS)
-    for leg in legs:
-        sheet.append([
+    values = [ETAPY_COLUMNS]
+    values.extend(
+        [
             leg.voyage_id, leg.number, leg.start_port, leg.end_port, leg.name,
             leg.day_from, leg.day_to, leg.date_from, leg.date_to, leg.day_range,
             f"{leg.date_from.isoformat()} – {leg.date_to.isoformat()}",
             leg.distance_nm, str(leg.geojson_path) if leg.geojson_path else None,
             leg.status, leg.notes,
-        ])
+        ]
+        for leg in legs
+    )
+    _replace_values_preserving_template(sheet, values)
+    if sheet.tables:
+        last_row = max(2, len(values))
+        for table in sheet.tables.values():
+            table.ref = f"A1:O{last_row}"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(output_path)
+
+
+def write_legs(input_path: Path, output_path: Path, legs: list[Leg]) -> None:
+    """Zachowany interfejs dla wcześniejszego polecenia `schedule`."""
+
+    workbook = load_workbook(input_path)
+    sheet = workbook["Etapy"]
+    values = [ETAPY_COLUMNS]
+    values.extend(
+        [
+            leg.voyage_id, leg.number, leg.start_port, leg.end_port, leg.name,
+            leg.day_from, leg.day_to, leg.date_from, leg.date_to, leg.day_range,
+            f"{leg.date_from.isoformat()} – {leg.date_to.isoformat()}",
+            leg.distance_nm, str(leg.geojson_path) if leg.geojson_path else None,
+            leg.status, leg.notes,
+        ]
+        for leg in legs
+    )
+    _replace_values_preserving_template(sheet, values)
+    if sheet.tables:
+        last_row = max(2, len(values))
+        for table in sheet.tables.values():
+            table.ref = f"A1:O{last_row}"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    workbook.save(output_path)
+
+
+def _replace_values_preserving_template(sheet, values: list[list[object]]) -> None:
+    """Podmienia dane, ale zostawia szerokości, style i formaty szablonu."""
+
+    required_rows = len(values)
+    if required_rows > sheet.max_row:
+        template_row = max(2, sheet.max_row)
+        for row_number in range(sheet.max_row + 1, required_rows + 1):
+            for column in range(1, len(values[0]) + 1):
+                source = sheet.cell(template_row, column)
+                target = sheet.cell(row_number, column)
+                target._style = source._style
+                target.number_format = source.number_format
+
+    for row in sheet.iter_rows(min_col=1, max_col=len(values[0])):
+        for cell in row:
+            cell.value = None
+    for row_number, row_values in enumerate(values, start=1):
+        for column, value in enumerate(row_values, start=1):
+            sheet.cell(row_number, column).value = value
+
+
+def _write_port_coordinates(sheet, calls: list[PortCall]) -> None:
+    headers = {str(cell.value).strip(): cell.column for cell in sheet[1] if cell.value}
+    call_by_key = {(call.voyage_id, call.order): call for call in calls}
+    previous_voyage_id: str | None = None
+    for row_number in range(2, sheet.max_row + 1):
+        entered_id = sheet.cell(row_number, headers["Rejs_ID"]).value
+        if entered_id not in (None, ""):
+            previous_voyage_id = str(entered_id).strip()
+        order = sheet.cell(row_number, headers["Kolejnosc"]).value
+        if previous_voyage_id is None or order in (None, ""):
+            continue
+        call = call_by_key.get((previous_voyage_id, int(order)))
+        if call is None:
+            continue
+        sheet.cell(row_number, headers["Lat"]).value = call.lat
+        sheet.cell(row_number, headers["Lon"]).value = call.lon

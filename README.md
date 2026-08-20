@@ -4,7 +4,7 @@ Narzędzie do przygotowywania morskich tras rejsów na podstawie skoroszytu Exce
 
 ## Stan projektu
 
-To pierwsza wersja specyfikacji i szkieletu aplikacji. Obliczenia kalendarza są zaimplementowane; integracje z geokoderem i sea-routerem mają jawne interfejsy i wymagają wyboru konkretnego dostawcy lub lokalnego programu.
+Generator obsługuje cały przepływ: sprawdza harmonogram, uzupełnia współrzędne z cache/Nominatim, wyznacza odcinki przez lokalny `sea-router`, liczy długości, zapisuje GeoJSON oraz tworzy wynikowy Excel i KML.
 
 ## Dane wejściowe
 
@@ -24,9 +24,11 @@ Pełna definicja kolumn i reguł: [docs/specyfikacja-excel.md](docs/specyfikacja
 - Puste `Postoj_dni` oznacza 1.
 - `Lat` i `Lon` są opcjonalne. Program korzysta z nich, a brakujące wartości pobiera i utrwala w wynikowym skoroszycie.
 - Niejednoznacznego portu program nie wybiera automatycznie — wymaga zatwierdzenia.
+- `Kraj` warto uzupełnić, ponieważ rozróżnia miasta o tych samych nazwach.
+- `Kolor_trasy` może być kodem `#RRGGBB` albo polską nazwą, np. `Niebieski`.
 - Ciężkie grafy sea-routera i dane OSM pozostają lokalne i są ignorowane przez Git.
 
-## Planowany przepływ
+## Przepływ
 
 1. Wczytanie i walidacja Excela.
 2. Normalizacja `Kiedy`, dat i postojów.
@@ -35,7 +37,7 @@ Pełna definicja kolumn i reguł: [docs/specyfikacja-excel.md](docs/specyfikacja
 5. Wyznaczenie geometrii przez sea-router.
 6. Zapis skoroszytu wynikowego, GeoJSON i KML.
 
-## Uruchomienie szkieletu
+## Uruchomienie
 
 Wymagany jest Python 3.11+.
 
@@ -47,6 +49,29 @@ rejsy-morskie validate examples/rejs-przyklad.xlsx
 ```
 
 Plik XLSX nie jest jeszcze przechowywany w repozytorium; układ przykładu jest opisany w [examples/README.md](examples/README.md).
+
+Uruchom lokalny router w osobnym oknie:
+
+```powershell
+E:\sea-router\rust\target\release\sea-router-rs.exe serve E:\sea-router\data
+```
+
+Następnie wygeneruj komplet wyników:
+
+```powershell
+rejsy-morskie generate E:\Rejsy-morskie\routes\rejsy.xlsx E:\Rejsy-morskie\outputs
+```
+
+Powstaną:
+
+- `outputs/rejs-uzupelniony.xlsx` — współrzędne, daty, etapy, dystanse i statusy;
+- `outputs/<Rejs_ID>/geojson/*.geojson` — geometria każdego etapu;
+- `outputs/<Rejs_ID>/trasa.kml` — plik do Google My Maps;
+- `outputs/geocoding-cache.json` — lokalny cache współrzędnych.
+
+### Geokodowanie OpenStreetMap
+
+Domyślnym geokoderem jest publiczny Nominatim. Program wysyła zapytania pojedynczo (maksymalnie jedno na sekundę), identyfikuje aplikację i zapisuje wyniki w cache. Dane: © OpenStreetMap contributors, ODbL. Przy większej lub komercyjnej skali należy skonfigurować własną instancję albo innego dostawcę. Zasady: https://operations.osmfoundation.org/policies/nominatim/
 
 ## Struktura
 
