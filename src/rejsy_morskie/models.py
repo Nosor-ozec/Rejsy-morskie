@@ -21,7 +21,7 @@ class PortCall:
     order: int
     port: str
     country: str | None
-    when: date | str
+    when: date | str | int | float
     stay_days: int = 1
     lat: float | None = None
     lon: float | None = None
@@ -52,3 +52,4 @@ class Leg:
     @property
     def day_range(self) -> str:
         return f"Dni {self.day_from}–{self.day_to}"
+

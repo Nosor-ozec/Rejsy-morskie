@@ -1,10 +1,10 @@
-# Specyfikacja danych Excel — wersja 0.1
+# Specyfikacja danych Excel — wersja 0.2
 
 ## Założenia ogólne
 
 Nazwy arkuszy i kolumn są stałe. Daty powinny być komórkami typu data Excela lub tekstem ISO `RRRR-MM-DD`. Identyfikatory `Rejs_ID` są tekstem. Puste komórki opcjonalne są dozwolone.
 
-Dzień zawierający `Data_startu` ma numer 1.
+Dzień zawierający `Data_startu` ma w wynikach numer 1.
 
 ## Arkusz Rejsy
 
@@ -25,11 +25,11 @@ Każdy wiersz opisuje jedno zawinięcie do portu.
 
 | Kolumna | Wymagana | Typ | Znaczenie |
 |---|---|---|---|
-| Rejs_ID | tak | tekst | Odwołanie do arkusza `Rejsy`. |
+| Rejs_ID | pierwszy wiersz rejsu | tekst | Odwołanie do arkusza `Rejsy`; puste dziedziczy wartość z poprzedniego niepustego wiersza. |
 | Kolejnosc | tak | liczba całkowita | Kolejność portu w rejsie, od 1. |
 | Port | tak | tekst | Nazwa portu. |
 | Kraj | zalecana | tekst | Kraj lub region ułatwiający jednoznaczne geokodowanie. |
-| Kiedy | tak | data lub `+N` | Data wpływu albo numer dnia wpływu. |
+| Kiedy | tak | data lub liczba `N` | Data wpływu albo liczba dni po `Data_startu`. |
 | Postoj_dni | nie | liczba całkowita >= 0 | Długość postoju; puste = 1. |
 | Lat | nie | liczba | Szerokość geograficzna od -90 do 90. |
 | Lon | nie | liczba | Długość geograficzna od -180 do 180. |
@@ -37,13 +37,28 @@ Każdy wiersz opisuje jedno zawinięcie do portu.
 
 Para `Lat`/`Lon` jest podawana razem albo obie wartości pozostają puste.
 
+### Dziedziczenie Rejs_ID
+
+- pierwszy niepusty wiersz `Porty` musi zawierać `Rejs_ID`;
+- pusty `Rejs_ID` oznacza ten sam rejs co w poprzednim niepustym wierszu;
+- wpisanie innego `Rejs_ID` rozpoczyna listę portów kolejnego rejsu;
+- odziedziczony identyfikator musi istnieć w arkuszu `Rejsy`.
+
 ### Interpretacja Kiedy
 
-- `+1` oznacza `Data_startu`;
-- `+N` oznacza `Data_startu + (N-1) dni`;
-- konkretna data daje dzień `(data - Data_startu) + 1`;
-- data wcześniejsza od startu oraz `+0` są błędami;
-- porty są sortowane po `Kolejnosc`, a wyliczone terminy nie mogą się cofać.
+- liczba `0` oznacza `Data_startu`;
+- liczba `N` oznacza `Data_startu + N dni`;
+- zapis tekstowy `+N` jest akceptowany dla zgodności wstecznej i ma to samo znaczenie co liczba `N`;
+- konkretna data jest punktem kontrolnym i daje dzień `(data - Data_startu) + 1`;
+- data wcześniejsza od startu oraz liczba ujemna są błędami;
+- liczby muszą być całkowite;
+- porty są sortowane po `Kolejnosc`, a wyliczone terminy po uwzględnieniu postojów nie mogą się cofać.
+
+Przykład: dla `Data_startu = 2024-12-07` wartość `1` oznacza 2024-12-08 i dzień rejsu 2, a wartość `4` oznacza 2024-12-11 i dzień rejsu 5.
+
+### Daty kontrolne i spójność
+
+W jednym rejsie można mieszać liczby i rzeczywiste daty. Program przelicza oba warianty na daty i numery dni. Jeśli rzeczywista data koliduje z kolejnością portów lub postojem w poprzednim porcie, generowanie zostaje przerwane z komunikatem zawierającym port, wpisaną datę i najwcześniejszą możliwą datę wpływu.
 
 ### Postój i rozpoczęcie etapu
 
@@ -89,4 +104,4 @@ KML zawiera folder rejsu, punkty portów i osobne linie etapów. Kolor `#RRGGBB`
 
 ## Walidacja minimalna
 
-Błędem są między innymi: brak arkusza lub wymaganej kolumny, powtórzony `Rejs_ID`, nieciągła lub powtórzona `Kolejnosc`, nieznany rejs w `Porty`, niepoprawne `Kiedy`, ujemny postój, połowa pary Lat/Lon oraz termin kolejnego portu wcześniejszy niż możliwe wyjście z poprzedniego.
+Błędem są między innymi: brak arkusza lub wymaganej kolumny, powtórzony `Rejs_ID`, pusty identyfikator w pierwszym wierszu `Porty`, nieciągła lub powtórzona `Kolejnosc`, nieznany rejs w `Porty`, niepoprawne `Kiedy`, ujemny postój, połowa pary Lat/Lon oraz termin kolejnego portu wcześniejszy niż możliwe wyjście z poprzedniego.
