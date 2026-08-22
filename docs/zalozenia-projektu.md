@@ -58,9 +58,16 @@ Uzgodniona koncepcja jest następująca:
 - w arkuszu `Porty` zostanie dodana kolumna `Filmy_grupa`;
 - dla portu wpisuje się identyfikator grupy, np. `51`;
 - pliki filmowe mają nazwy w formacie `<grupa>_<kolejność>-<opis>.mp4`, np. `51_1-film1.mp4`, `51_2-film2.mp4`;
-- program ma sam odnajdywać wszystkie filmy zaczynające się od identyfikatora grupy, np. `51_`;
-- dodanie kolejnego filmu do tej samej grupy nie powinno wymagać zmiany Excela;
-- techniczne numery grupy i kolejności nie powinny być eksponowane użytkownikowi na mapie.
+- system ma odnajdywać wszystkie filmy zaczynające się od identyfikatora grupy, np. `51_`;
+- dodanie lub usunięcie filmu z tej samej grupy nie wymaga zmiany Excela;
+- techniczne numery grupy i kolejności nie powinny być eksponowane użytkownikowi na mapie;
+- lista filmów ma być dynamiczna: po zmianie zawartości internetowego katalogu aktualny zestaw ma pojawić się po odświeżeniu albo ponownym otwarciu Google Earth;
+- aktualizacja filmów nie może wymagać ponownego uruchamiania generatora Pythona, `sea-routera` ani ponownego generowania całej trasy;
+- planowana architektura rozdziela stałą warstwę trasy i portów od dynamicznej warstwy mediów, prawdopodobnie z użyciem KML `NetworkLink`;
+- preferowanym miejscem pierwszego testu przechowywania filmów jest Google Drive; Cloudflare R2 pozostaje wariantem zapasowym;
+- YouTube nie jest planowany jako magazyn filmów.
+
+Szczegółowe wymagania i test akceptacyjny opisuje `docs/filmy.md`.
 
 Ta funkcja jest założeniem do kolejnego etapu rozwoju i nie jest jeszcze zaimplementowana w bieżącej wersji programu.
 
