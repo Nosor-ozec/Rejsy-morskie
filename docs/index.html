@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rejsy morskie</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><p class="eyebrow">Dziennik podróży</p><h1 id="voyage-title">Rejsy morskie</h1></header>
+  <main>
+    <aside aria-label="Nawigacja po portach">
+      <button id="whole-route" type="button">Cała trasa</button>
+      <ol id="ports"></ol>
+      <div class="step-nav"><button id="previous" type="button">Poprzedni</button><button id="next" type="button">Następny</button></div>
+    </aside>
+    <section id="map" aria-label="Mapa rejsu"></section>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

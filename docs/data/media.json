@@ -1,0 +1,124 @@
+{
+  "media": [
+    {
+      "id": "Dubrownik_1",
+      "port": "Dubrownik",
+      "description": "Zwiedzanie Dubrovnika",
+      "url": "https://drive.google.com/file/d/1u2Q4YIQ-ohTOVyxNHRSkkCTPhj1zux27/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        42.6491029,
+        18.0939501
+      ]
+    },
+    {
+      "id": "KATANIA_1",
+      "port": "Katania",
+      "description": "Zwiedzanie Sycylii",
+      "url": "https://drive.google.com/file/d/1pUJqXbeJcdXMgzCAG_kZcgwKq0va2zLh/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        37.5023612,
+        15.0873718
+      ]
+    },
+    {
+      "id": "Civitavecchia_1",
+      "port": "Civitavecchia",
+      "description": "Zwiedzanie Rzymu",
+      "url": "https://drive.google.com/file/d/1-6GUdMfDhEKuoPCepc0nPf_SKndViiJI/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        42.0937524,
+        11.7922462
+      ]
+    },
+    {
+      "id": "Savona_1",
+      "port": "Savona",
+      "description": "Zwiedzanie Savony",
+      "url": "https://drive.google.com/file/d/1yWm5FmCw4oF1ye1vaJLgV8MC_MRBRbcR/view?usp=sharing",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        44.3080251,
+        8.4810315
+      ]
+    },
+    {
+      "id": "Marsylia_1",
+      "port": "Marsylia",
+      "description": "Zwiedzanie Awinion",
+      "url": "https://drive.google.com/file/d/1nweIx4pV-EBXBDKdvcPCk-T-_rTlBWmK/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        43.2963986,
+        5.3777888
+      ]
+    },
+    {
+      "id": "Casablanca_1",
+      "port": "Casablanca",
+      "description": "Zwiedzanie Casablanki",
+      "url": "https://drive.google.com/file/d/1uKiaWVcrEu7Cbj5M57WN_75w34AL7Ozl/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        33.5945144,
+        -7.6200284
+      ]
+    },
+    {
+      "id": "Casablanca_2",
+      "port": "Casablanca",
+      "description": "Zwiedzanie meczetu Hasana II",
+      "url": "https://drive.google.com/file/d/1ID3o0z_RijwWsb56TWI3GdARfYNGH6P5/view?usp=drive_link",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        33.5945144,
+        -7.6200284
+      ]
+    },
+    {
+      "id": "Barcelona_1",
+      "port": "Barcelona",
+      "description": "Na statku",
+      "url": "https://drive.google.com/file/d/1cLA-DZbtRPb2Ga_x70cZfRdccFCnIOQB/view?usp=sharing",
+      "dayFromPort": 1.0,
+      "atSea": true,
+      "position": [
+        37.80275165386629,
+        0.0024250060822490465
+      ]
+    },
+    {
+      "id": "Casablanca_3",
+      "port": "Casablanca",
+      "description": "Na statku",
+      "url": "https://drive.google.com/file/d/15Z6Iy7A8w-WgZ0N5PA2zXYVwBQBOtT3s/view?usp=drive_link",
+      "dayFromPort": 1.0,
+      "atSea": true,
+      "position": [
+        31.577551964017587,
+        -12.218111624084317
+      ]
+    },
+    {
+      "id": "Las Palmas_1",
+      "port": "Las Palmas",
+      "description": "Wycieczka po  Gran Canaria",
+      "url": "https://drive.google.com/file/d/1z6NcYrttj16VWA-ALkt7ogftLHzzd_od/view?usp=sharing",
+      "dayFromPort": 0.0,
+      "atSea": false,
+      "position": [
+        28.1288694,
+        -15.4349015
+      ]
+    }
+  ]
+}

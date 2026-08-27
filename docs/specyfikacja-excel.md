@@ -1,111 +1,64 @@
-# Specyfikacja danych Excel — wersja 0.2
+# Specyfikacja danych Excel — wersja 1.0
 
-## Założenia ogólne
+## `routes/rejsy.xlsx`
 
-Nazwy arkuszy i kolumn są stałe. Daty powinny być komórkami typu data Excela lub tekstem ISO `RRRR-MM-DD`. Identyfikatory `Rejs_ID` są tekstem. Puste komórki opcjonalne są dozwolone.
+### Arkusz `Rejsy`
 
-Dzień zawierający `Data_startu` ma w wynikach numer 1.
+| Kolumna | Wymagana | Znaczenie |
+|---|---:|---|
+| `Rejs_ID` | tak | Unikalny identyfikator rejsu. |
+| `Nazwa_rejsu` | tak | Nazwa widoczna na stronie. |
+| `Data_startu` | tak | Pierwszy dzień rejsu. |
+| `Kolor_trasy` | nie | `#RRGGBB` albo obsługiwana polska nazwa koloru. |
+| `CA` | nie | Dodatni parametr odsunięcia przekazywany sea-routerowi. |
+| `Uwagi` | nie | Notatki. |
 
-## Arkusz Rejsy
+### Arkusz `Porty`
 
-Jeden wiersz opisuje jeden rejs.
+| Kolumna | Wymagana | Znaczenie |
+|---|---:|---|
+| `Rejs_ID` | w pierwszym wierszu rejsu | Puste dziedziczy poprzednią wartość. |
+| `Kolejnosc` | tak | Ciągła kolejność od 1. |
+| `Port` | tak | Docelowa nazwa portu, np. `Katania`. |
+| `Kraj` | nie | Pomaga w pierwszym geokodowaniu. |
+| `Kiedy` | tak | Data albo całkowita liczba dni od `Data_startu`. |
+| `Postoj_dni` | nie | Liczba całkowita >= 0; puste oznacza 1. |
+| `Lat`, `Lon` | razem albo oba puste | Zatwierdzone współrzędne. Jeśli istnieją, program ich nie przelicza. |
+| `Uwagi` | nie | Notatki. |
 
-| Kolumna | Wymagana | Typ | Znaczenie |
-|---|---|---|---|
-| Rejs_ID | tak | tekst | Unikalny identyfikator, np. `R2026-01`. |
-| Nazwa_rejsu | tak | tekst | Nazwa widoczna w wynikach i KML. |
-| Data_startu | tak | data | Pierwszy dzień rejsu. |
-| Kolor_trasy | nie | tekst | Kolor `#RRGGBB` albo polska nazwa, np. `Niebieski`; domyślnie `#0057B8`. |
-| CA | nie | liczba dodatnia | Siła odsunięcia trasy od wybrzeża przekazywana do sea-routera; puste = domyślnie 5, większa wartość daje zwykle większy odstęp, np. `8`. |
-| Uwagi | nie | tekst | Notatki dotyczące całego rejsu. |
+Liczba `0` w `Kiedy` oznacza datę startu, a `N` oznacza `Data_startu + N dni`. Tekst `+N` jest zgodny wstecznie. Konkretna data jest punktem kontrolnym. Harmonogram nie może cofać się po uwzględnieniu postoju.
 
-## Arkusz Porty
+### Arkusz `Etapy`
 
-Każdy wiersz opisuje jedno zawinięcie do portu.
+Program aktualizuje go w tym samym `rejsy.xlsx`. Każdy wiersz opisuje jeden odcinek i zawiera: identyfikator, numer, port początkowy i końcowy, nazwę, dni i daty, dystans, względną ścieżkę GeoJSON, status i uwagi.
 
-| Kolumna | Wymagana | Typ | Znaczenie |
-|---|---|---|---|
-| Rejs_ID | pierwszy wiersz rejsu | tekst | Odwołanie do arkusza `Rejsy`; puste dziedziczy wartość z poprzedniego niepustego wiersza. |
-| Kolejnosc | tak | liczba całkowita | Kolejność portu w rejsie, od 1. |
-| Port | tak | tekst | Nazwa portu. |
-| Kraj | zalecana | tekst | Kraj lub region ułatwiający jednoznaczne geokodowanie. |
-| Kiedy | tak | data lub liczba `N` | Data wpływu albo liczba dni po `Data_startu`. |
-| Postoj_dni | nie | liczba całkowita >= 0 | Długość postoju; puste = 1. |
-| Lat | nie | liczba | Szerokość geograficzna od -90 do 90. |
-| Lon | nie | liczba | Długość geograficzna od -180 do 180. |
-| Uwagi | nie | tekst | Notatki o zawinięciu. |
+Przed zapisem powstaje kopia w `routes/.backups/`, a wymiana właściwego pliku jest atomowa. Nie tworzy się dodatkowego skoroszytu wynikowego.
 
-Para `Lat`/`Lon` jest podawana razem albo obie wartości pozostają puste.
+## `routes/media.xlsx`
 
-### Dziedziczenie Rejs_ID
+Arkusz nazywa się `Filmy` ze względu na zgodność istniejących danych, ale może zawierać filmy MP4/MOV i zdjęcia.
 
-- pierwszy niepusty wiersz `Porty` musi zawierać `Rejs_ID`;
-- pusty `Rejs_ID` oznacza ten sam rejs co w poprzednim niepustym wierszu;
-- wpisanie innego `Rejs_ID` rozpoczyna listę portów kolejnego rejsu;
-- odziedziczony identyfikator musi istnieć w arkuszu `Rejsy`.
+| Kolumna | Wymagana | Znaczenie |
+|---|---:|---|
+| `Film_ID` | tak | Wewnętrzne `<nazwa_portu>_<numer>`, np. `KATANIA_1`. Dopasowanie nazwy portu nie rozróżnia wielkości liter. |
+| `Typ` | nie | Pole informacyjne; format pliku nie steruje sposobem linkowania. |
+| `Powiazanie` | nie | Pole zgodności istniejącego arkusza. |
+| `Dzien_od_portu` | nie | Puste/0 = przy porcie; dodatnia liczba = pozycja na odcinku do następnego portu. |
+| `Opis` | tak | Tekst linku w dymku. |
+| `URL_Google_Drive` | tak | Pełny publiczny URL używany bezpośrednio przez stronę. |
+| `Aktywny` | tak | `TAK` włącza wpis. |
 
-### Interpretacja Kiedy
+### `Film_ID`
 
-- liczba `0` oznacza `Data_startu`;
-- liczba `N` oznacza `Data_startu + N dni`;
-- zapis tekstowy `+N` jest akceptowany dla zgodności wstecznej i ma to samo znaczenie co liczba `N`;
-- konkretna data jest punktem kontrolnym i daje dzień `(data - Data_startu) + 1`;
-- data wcześniejsza od startu oraz liczba ujemna są błędami;
-- liczby muszą być całkowite;
-- porty są sortowane po `Kolejnosc`, a wyliczone terminy po uwzględnieniu postojów nie mogą się cofać.
+Część przed końcowym `_numer` musi wskazywać istniejącą nazwę z arkusza `Porty`. Identyfikator nie jest nazwą rzeczywistego pliku i nie jest pokazywany odbiorcy. Nazwa pliku na Drive może być dowolna.
 
-Przykład: dla `Data_startu = 2024-12-07` wartość `1` oznacza 2024-12-08 i dzień rejsu 2, a wartość `4` oznacza 2024-12-11 i dzień rejsu 5.
+### `Dzien_od_portu`
 
-### Daty kontrolne i spójność
+- puste lub `0`: współrzędne portu;
+- wartość `> 0`: udział `wartość / liczba_dni_etapu` wzdłuż całej linii GeoJSON, liczony według długości jej segmentów;
+- akceptowane są liczby dziesiętne, również zapis `2,4`;
+- wartość większa od czasu etapu, brak portu, brak następnego etapu lub brak geometrii są błędami — program nie zgaduje.
 
-W jednym rejsie można mieszać liczby i rzeczywiste daty. Program przelicza oba warianty na daty i numery dni. Jeśli rzeczywista data koliduje z kolejnością portów lub postojem w poprzednim porcie, generowanie zostaje przerwane z komunikatem zawierającym port, wpisaną datę i najwcześniejszą możliwą datę wpływu.
+## Walidacja
 
-### Postój i rozpoczęcie etapu
-
-Dzień wyjścia z portu to dzień wpływu + `Postoj_dni`. Przykład: wpływ w dniu 2 i postój 1 dzień oznacza rozpoczęcie kolejnego etapu w dniu 3. Dla portu początkowego można użyć postoju 0.
-
-## Arkusz Etapy
-
-Arkusz jest generowany od nowa przez program. Jeden wiersz odpowiada trasie pomiędzy dwiema kolejnymi pozycjami w `Porty`.
-
-| Kolumna | Znaczenie |
-|---|---|
-| Rejs_ID | Identyfikator rejsu. |
-| Etap_nr | Numer etapu od 1. |
-| Port_start | Port początkowy. |
-| Port_koniec | Port końcowy. |
-| Nazwa_etapu | Np. `Dubrovnik → Catania`. |
-| Dzien_od | Dzień wyjścia z portu początkowego. |
-| Dzien_do | Dzień wpływu do portu końcowego. |
-| Data_od | Data odpowiadająca `Dzien_od`. |
-| Data_do | Data wpływu do portu końcowego. |
-| Zakres_dni | Np. `Dni 3–4`. |
-| Zakres_dat | Czytelny zakres dat. |
-| Dystans_nm | Długość trasy w milach morskich, jeśli zwróci ją router. |
-| GeoJSON_path | Ścieżka do geometrii etapu. |
-| Status | Np. `gotowy`, `brak_wspolrzednych`, `brak_trasy`. |
-| Uwagi | Ostrzeżenia i informacje diagnostyczne. |
-
-## Geokodowanie i utrwalanie
-
-1. Jeśli `Lat` i `Lon` są podane, program ich nie nadpisuje.
-2. W przeciwnym razie szuka portu po nazwie i kraju/regionie.
-3. Wynik jednoznaczny zapisuje do cache oraz wynikowego XLSX.
-4. Wiele sensownych wyników powoduje status wymagający zatwierdzenia.
-5. Cache powinien przechowywać zapytanie, współrzędne, źródło i datę pobrania.
-
-Domyślna integracja korzysta z Nominatim/OpenStreetMap, ogranicza ruch do jednego zapytania na sekundę i zapisuje każdy zaakceptowany wynik w cache. Dane wymagają atrybucji: © OpenStreetMap contributors, ODbL.
-
-Program nie powinien modyfikować pliku wejściowego w miejscu. Domyślny wynik to `outputs/<Rejs_ID>/rejs-uzupelniony.xlsx`.
-
-## Sea-router i eksport
-
-Adapter sea-routera otrzymuje współrzędne początku i końca oraz opcjonalny parametr `CA`, a zwraca linię GeoJSON i opcjonalnie dystans. Graf routingu i dane OSM są lokalną zależnością, nie częścią repozytorium.
-
-Dystans jest liczony z końcowej linii GeoJSON metodą haversine i zapisywany w milach morskich. Dzięki temu nie zależy od wewnętrznego kosztu grafu routingu.
-
-KML zawiera folder rejsu, punkty portów i osobne linie etapów. Kolor `#RRGGBB` jest konwertowany do formatu KML `aabbggrr`. Wynik musi dać się zaimportować do Google My Maps.
-
-## Walidacja minimalna
-
-Błędem są między innymi: brak arkusza lub wymaganej kolumny, powtórzony `Rejs_ID`, pusty identyfikator w pierwszym wierszu `Porty`, nieciągła lub powtórzona `Kolejnosc`, nieznany rejs w `Porty`, niepoprawne `Kiedy`, ujemny postój, połowa pary Lat/Lon oraz termin kolejnego portu wcześniejszy niż możliwe wyjście z poprzedniego.
+Błędem są m.in. brak wymaganej kolumny, nieznany port w `Film_ID`, powtórzony identyfikator, niepoprawny URL, ujemny dzień, przekroczenie etapu, nieciągła kolejność portów i niepełna para `Lat`/`Lon`.

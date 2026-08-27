@@ -1,79 +1,46 @@
-# Organizacja pracy z projektem
+# Organizacja pracy i publikacja
 
-## Podział odpowiedzialności
+## Zwykła aktualizacja mediów
 
-### Zmiana struktury danych lub programu
-
-Zmiany takie jak dodanie kolumny do Excela, zmiana znaczenia pola, dodanie arkusza albo nowej funkcji generatora są zmianami programu.
-
-Powinny być wykonywane razem z odpowiednimi zmianami kodu, dokumentacji i testów, a następnie zapisane w GitHubie. Do takich prac może być używany Codex/Work.
-
-### Wprowadzanie danych konkretnego rejsu
-
-Gdy struktura skoroszytu jest już ustalona, użytkownik normalnie edytuje lokalną kopię:
-
-`E:\Rejsy-morskie\routes\rejsy.xlsx`
-
-Wpisuje lub poprawia porty, daty, postoje i inne dane rejsu. Nie wymaga to zmiany programu.
-
-Po istotnych zmianach danych `routes/rejsy.xlsx` powinien zostać zapisany również w repozytorium GitHub, aby kod, dokumentacja i dane wejściowe miały wspólną historię wersji.
-
-## Co jest na GitHubie
-
-Repozytorium jest trwałym źródłem projektu i powinno zawierać:
-
-- `README.md`;
-- katalog `docs/`;
-- kod w `src/`;
-- testy;
-- `routes/rejsy.xlsx` — właściwy skoroszyt wejściowy z danymi rejsów.
-
-Plik XLSX jest binarny, więc GitHub nie pokazuje wygodnego porównania zmian komórek, ale kolejne commity przechowują kolejne wersje całego pliku.
-
-## Co pozostaje lokalnie
-
-Nie wersjonujemy plików, które są duże albo można je ponownie wygenerować:
-
-- `outputs/`;
-- wygenerowanych GeoJSON;
-- wygenerowanych KML;
-- wynikowych skoroszytów;
-- dużych danych OSM i grafów `sea-router`;
-- lokalnego cache geokodowania.
-
-## Uruchamianie generatora
-
-Generator działa na komputerze, na którym dostępne są lokalny `sea-router`, jego dane oraz lokalna kopia repozytorium.
-
-Najpierw uruchamia się router w osobnym oknie:
+1. Zmień opisy, aktywność lub URL w `routes/media.xlsx`.
+2. Uruchom:
 
 ```powershell
-E:\sea-router\rust\target\release\sea-router-rs.exe serve E:\sea-router\data
+rejsy-morskie media routes\rejsy.xlsx routes\media.xlsx docs
 ```
 
-Następnie generator:
+3. Zapisz i opublikuj zmieniony `routes/media.xlsx` oraz `docs/data/media.json`.
+
+Sea-router nie jest uruchamiany. Nazwa pliku na Drive nie ma znaczenia; publiczny URL w arkuszu jest jedynym połączeniem z medium.
+
+## Zmiana portów lub trasy
+
+Uruchom lokalny sea-router, a następnie:
 
 ```powershell
-rejsy-morskie generate E:\Rejsy-morskie\routes\rejsy.xlsx E:\Rejsy-morskie\outputs
+rejsy-morskie route routes\rejsy.xlsx docs
+rejsy-morskie media routes\rejsy.xlsx routes\media.xlsx docs
+rejsy-morskie web routes\rejsy.xlsx docs
 ```
 
-Program czyta dane z `routes/rejsy.xlsx`, wylicza harmonogram i etapy, korzysta z geokodowania oraz `sea-routera`, a następnie zapisuje wyniki w `outputs/`.
+Pierwsze polecenie korzysta z istniejącego GeoJSON, jeśli współrzędne końców i parametr trasy nadal pasują. `rejsy.xlsx` jest aktualizowany w miejscu po wykonaniu bezpiecznej kopii.
 
-Codex/Work może uruchamiać i testować te polecenia podczas prac rozwojowych. Po skonfigurowaniu środowiska generator nie wymaga Codexa do zwykłego użycia — może być uruchamiany lokalnie przez użytkownika. W przyszłości można przygotować prosty skrypt `.bat`/PowerShell uruchamiający cały proces.
+## Przebudowa samej strony
 
-## Typowy cykl pracy
+```powershell
+rejsy-morskie web routes\rejsy.xlsx docs
+```
 
-1. Zaktualizować lokalne repozytorium z GitHuba, jeśli były zmiany programu.
-2. Otworzyć `routes/rejsy.xlsx` i wprowadzić dane rejsu.
-3. Zapisać skoroszyt.
-4. Uruchomić lokalny `sea-router`.
-5. Uruchomić generator.
-6. Sprawdzić wygenerowany KML w Google My Maps / Google Earth.
-7. Jeśli trzeba, poprawić dane lub parametry i wygenerować ponownie.
-8. Po istotnej zmianie danych zapisać aktualny `routes/rejsy.xlsx` w GitHubie.
+To polecenie nie uruchamia sea-routera i nie modyfikuje skoroszytów.
 
-## Ważna zasada bezpieczeństwa
+## GitHub Pages
 
-GitHub jest podstawowym trwałym zapisem projektu. Rozmowa z ChatGPT, sesja Work ani katalog roboczy Codexa nie powinny być jedynym miejscem przechowywania ustaleń lub ukończonego kodu.
+Repozytorium `Nosor-ozec/Rejsy-morskie` powinno publikować katalog `/docs` z gałęzi `main`. Po wypchnięciu zmian GitHub Pages udostępnia stronę zwykle pod adresem:
 
-Istotne decyzje projektowe należy dopisywać do dokumentacji, a ukończone zmiany programu i danych wejściowych commitować do repozytorium.
+`https://nosor-ozec.github.io/Rejsy-morskie/`
+
+Publikację uznaje się za zakończoną dopiero po sprawdzeniu, że adres odpowiada i ładuje `data/route.json` oraz `data/media.json`.
+
+## Zakres repozytorium
+
+W repozytorium przechowujemy kod, testy, oba źródłowe XLSX, dokumentację, GeoJSON i pliki statycznej strony. Lokalne dane sea-routera, cache geokodowania i kopie `routes/.backups/` pozostają niewersjonowane.
