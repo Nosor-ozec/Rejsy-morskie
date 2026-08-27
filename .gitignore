@@ -23,6 +23,7 @@ __pycache__/
 ~$*.xlsx
 routes/*.xlsx
 !routes/rejsy.xlsx
+!routes/media.xlsx
 tests/_work/
 
 # Pliki tymczasowe Windows
