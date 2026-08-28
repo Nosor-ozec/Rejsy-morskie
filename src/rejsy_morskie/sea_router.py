@@ -111,7 +111,10 @@ class HttpSeaRouter:
 
 
 def _fetch_json(url: str, timeout: float) -> object:
-    with urllib.request.urlopen(url, timeout=timeout) as response:
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({})
+    )
+    with opener.open(url, timeout=timeout) as response:
         return json.load(response)
 
 

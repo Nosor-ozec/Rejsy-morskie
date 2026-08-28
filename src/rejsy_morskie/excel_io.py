@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from shutil import copy2
 from typing import Iterable
 
 from openpyxl import load_workbook
@@ -105,6 +106,22 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
         )
     return voyages, calls
 
+def _save_workbook_atomic(workbook, output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_path = output_path.with_name(
+        f"{output_path.stem}.tmp{output_path.suffix}"
+    )
+    backup_path = output_path.with_name(
+        f"{output_path.stem}.bak{output_path.suffix}"
+    )
+
+    if output_path.exists():
+        copy2(output_path, backup_path)
+
+    workbook.save(temp_path)
+    temp_path.replace(output_path)
+
 
 def write_results(
     input_path: Path,
@@ -114,25 +131,38 @@ def write_results(
 ) -> None:
     workbook = load_workbook(input_path)
     _write_port_coordinates(workbook["Porty"], calls)
+
     sheet = workbook["Etapy"]
     values = [ETAPY_COLUMNS]
     values.extend(
         [
-            leg.voyage_id, leg.number, leg.start_port, leg.end_port, leg.name,
-            leg.day_from, leg.day_to, leg.date_from, leg.date_to, leg.day_range,
+            leg.voyage_id,
+            leg.number,
+            leg.start_port,
+            leg.end_port,
+            leg.name,
+            leg.day_from,
+            leg.day_to,
+            leg.date_from,
+            leg.date_to,
+            leg.day_range,
             f"{leg.date_from.isoformat()} – {leg.date_to.isoformat()}",
-            leg.distance_nm, str(leg.geojson_path) if leg.geojson_path else None,
-            leg.status, leg.notes,
+            leg.distance_nm,
+            str(leg.geojson_path) if leg.geojson_path else None,
+            leg.status,
+            leg.notes,
         ]
         for leg in legs
     )
+
     _replace_values_preserving_template(sheet, values)
+
     if sheet.tables:
         last_row = max(2, len(values))
         for table in sheet.tables.values():
             table.ref = f"A1:O{last_row}"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    workbook.save(output_path)
+
+    _save_workbook_atomic(workbook, output_path)
 
 
 def write_legs(input_path: Path, output_path: Path, legs: list[Leg]) -> None:

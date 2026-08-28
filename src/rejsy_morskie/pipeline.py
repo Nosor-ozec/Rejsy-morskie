@@ -84,9 +84,9 @@ def generate_routes(
         output_paths.append(kml_path)
         all_legs.extend(legs)
 
-    workbook_path = output_dir / "rejs-uzupelniony.xlsx"
-    write_results(input_path, workbook_path, calls, all_legs)
-    return [workbook_path, *output_paths]
+        workbook_path = input_path
+        write_results(input_path, workbook_path, calls, all_legs)
+        return [workbook_path, *output_paths]
 
 
 def _coordinates_lon_lat(geometry: dict[str, object]) -> list[tuple[float, float]]:
