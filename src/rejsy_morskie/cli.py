@@ -7,6 +7,7 @@ from .excel_io import load_input
 from .geocoding import CachedGeocoder, NominatimGeocoder
 from .pipeline import build_schedule, generate_routes
 from .sea_router import HttpSeaRouter
+from .web import build_local_site, publish_site
 
 
 def parser() -> argparse.ArgumentParser:
@@ -31,6 +32,15 @@ def parser() -> argparse.ArgumentParser:
     generate.add_argument(
         "--nominatim-url", default="https://nominatim.openstreetmap.org"
     )
+    generate.add_argument("--media", type=Path)
+    generate.add_argument("--site-dir", type=Path)
+    generate.add_argument("--web-assets", type=Path)
+
+    publish = commands.add_parser(
+        "publish", help="Skopiuj sprawdzony podgląd lokalny do docs"
+    )
+    publish.add_argument("site_dir", type=Path)
+    publish.add_argument("docs_dir", type=Path)
 
     return root
 
@@ -58,6 +68,22 @@ def main() -> None:
             print("Gotowe pliki:")
             for output in outputs:
                 print(f"- {output}")
+            site_arguments = (args.media, args.site_dir, args.web_assets)
+            if any(site_arguments) and not all(site_arguments):
+                raise ValueError(
+                    "Opcje --media, --site-dir i --web-assets muszą wystąpić razem"
+                )
+            if all(site_arguments):
+                site_outputs = build_local_site(
+                    args.input, args.media, args.output_dir, args.site_dir,
+                    args.web_assets,
+                )
+                print("Gotowy pełny podgląd Leaflet:")
+                for output in site_outputs:
+                    print(f"- {output}")
+        elif args.command == "publish":
+            outputs = publish_site(args.site_dir, args.docs_dir)
+            print(f"Przygotowano {len(outputs)} plików publicznych w {args.docs_dir}")
     except (OSError, RuntimeError, ValueError) as error:
         raise SystemExit(f"Błąd: {error}") from None
 

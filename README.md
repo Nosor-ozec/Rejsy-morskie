@@ -1,6 +1,6 @@
 # Rejsy-morskie
 
-Narzędzie do przygotowywania morskich tras rejsów na podstawie skoroszytu Excel. Program uzupełnia współrzędne portów, oblicza dni i daty, wyznacza odcinki przez sea-router oraz eksportuje KML do Google My Maps / Google Earth.
+Narzędzie do przygotowywania morskich tras rejsów i kompletnej prezentacji Leaflet na podstawie dwóch skoroszytów Excel. Program uzupełnia współrzędne portów, oblicza dni i daty, wyznacza odcinki przez sea-router, łączy media z portami i punktami `Na morzu` oraz buduje pełny podgląd lokalny.
 
 ## Dokumentacja projektu
 
@@ -10,9 +10,7 @@ Narzędzie do przygotowywania morskich tras rejsów na podstawie skoroszytu Exce
 
 ## Stan projektu
 
-Generator obsługuje cały podstawowy przepływ: sprawdza harmonogram, uzupełnia współrzędne z cache/Nominatim, wyznacza odcinki przez lokalny `sea-router`, liczy długości, zapisuje GeoJSON oraz tworzy wynikowy Excel i KML.
-
-Planowanym kolejnym rozszerzeniem jest przypisywanie filmów do portów przez pole `Filmy_grupa`. Uzgodniona koncepcja jest opisana w `docs/zalozenia-projektu.md`; nie jest jeszcze zaimplementowana w bieżącej wersji programu.
+Generator obsługuje cały przepływ: aktualizuje `routes/rejsy.xlsx` w miejscu, zapisuje rzeczywiste GeoJSON i pomocniczy KML, czyta `routes/media.xlsx` oraz przygotowuje lokalną stronę Leaflet. Publikacja jest osobnym, świadomym krokiem i nie wykonuje operacji Git.
 
 ## Dane wejściowe
 
@@ -51,8 +49,9 @@ Pełna definicja kolumn i reguł: [docs/specyfikacja-excel.md](docs/specyfikacja
 4. Uzupełnia brakujące współrzędne.
 5. Tworzy etapy pomiędzy kolejnymi portami.
 6. Wyznacza geometrię przez lokalny sea-router.
-7. Zapisuje wynikowy skoroszyt, GeoJSON i KML w `outputs/`.
-8. KML jest sprawdzany/importowany w Google My Maps / Google Earth.
+7. Aktualizuje `routes/rejsy.xlsx` w miejscu i zachowuje `routes/rejsy.bak.xlsx`.
+8. Buduje `outputs/podglad-leaflet` z portami, trasami, mediami i punktami `Na morzu`.
+9. Uruchamia lokalny serwer WWW i otwiera Leaflet w przeglądarce.
 
 Zwykłe dopisywanie danych rejsu nie wymaga zmiany programu. Zmiana struktury skoroszytu jest zmianą programu i powinna zostać wykonana razem z aktualizacją dokumentacji oraz testów.
 
@@ -66,24 +65,20 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
-Uruchom lokalny router w osobnym oknie:
+Uruchom:
 
-```powershell
-E:\sea-router\rust\target\release\sea-router-rs.exe serve E:\sea-router\data
-```
-
-Następnie wygeneruj komplet wyników:
-
-```powershell
-rejsy-morskie generate E:\Rejsy-morskie\routes\rejsy.xlsx E:\Rejsy-morskie\outputs
-```
+`Uruchom-Rejsy.cmd`
 
 Powstaną:
 
-- `outputs/rejs-uzupelniony.xlsx` — współrzędne, daty, etapy, dystanse i statusy;
+- `routes/rejsy.xlsx` — ten sam skoroszyt z uzupełnionymi współrzędnymi i arkuszem `Etapy`;
+- `routes/rejsy.bak.xlsx` — lokalna kopia stanu sprzed ostatniego zapisu;
 - `outputs/<Rejs_ID>/geojson/*.geojson` — geometria każdego etapu;
-- `outputs/<Rejs_ID>/trasa.kml` — plik do Google My Maps / Google Earth;
+- `outputs/<Rejs_ID>/trasa.kml` — pomocniczy wynik kontroli;
+- `outputs/podglad-leaflet/` — kompletna lokalna wersja strony;
 - `outputs/geocoding-cache.json` — lokalny cache współrzędnych.
+
+Po sprawdzeniu mapy uruchom `Publikuj-Rejsy.cmd`. Skrypt kopiuje dokładnie sprawdzony wynik do `docs`, ale nie wykonuje `commit` ani `push`. Użytkownik robi to ręcznie w GitHub Desktop.
 
 Codex/Work może wykonywać i testować ten proces podczas rozwoju programu, ale do zwykłego generowania wyników nie jest wymagany — program działa lokalnie na komputerze z odpowiednim środowiskiem i danymi sea-routera.
 
@@ -98,6 +93,7 @@ Domyślnym geokoderem jest publiczny Nominatim. Program wysyła zapytania pojedy
 - `src/rejsy_morskie/geocoding.py` — cache i interfejs geokodera;
 - `src/rejsy_morskie/sea_router.py` — interfejs adaptera sea-routera;
 - `src/rejsy_morskie/kml.py` — eksport KML;
+- `src/rejsy_morskie/web.py` — wspólne dane i pliki lokalnej/publicznej mapy Leaflet;
 - `src/rejsy_morskie/cli.py` — polecenia programu;
 - `routes/rejsy.xlsx` — wersjonowane dane wejściowe rejsów;
 - `docs/` — założenia, organizacja pracy i specyfikacja danych.
@@ -106,4 +102,4 @@ Domyślnym geokoderem jest publiczny Nominatim. Program wysyła zapytania pojedy
 
 Do repozytorium nie trafiają duże dane OSM, grafy routingu ani wygenerowane wyniki. Domyślne miejsca to `local-data/`, `data/` i `outputs/`.
 
-Repozytorium GitHub jest podstawowym trwałym zapisem projektu. Istotne decyzje powinny być zapisywane w dokumentacji, a ukończone zmiany kodu i danych wejściowych commitowane do repozytorium; historia rozmów lub sesja Work nie zastępuje dokumentacji projektu.
+GitHub nie jest synchronizowany automatycznie. Istotne decyzje są zapisywane w dokumentacji, a commit i push użytkownik wykonuje ręcznie w GitHub Desktop.

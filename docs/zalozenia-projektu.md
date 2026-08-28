@@ -2,7 +2,7 @@
 
 ## Cel
 
-Celem jest odtwarzalna prezentacja rejsu na mapie Leaflet. Program łączy trasę i porty z opisowymi linkami do mediów, a wynik publikuje jako statyczną stronę GitHub Pages.
+Celem jest odtwarzalna prezentacja rejsu na mapie Leaflet, najpierw w pełni sprawdzana lokalnie, a dopiero później przygotowywana do ręcznej publikacji.
 
 ## Źródła danych
 
@@ -13,16 +13,17 @@ Obowiązują dokładnie dwa skoroszyty:
 
 Nie są źródłami danych `filmy-test.xlsx`, `rejsy-z-etapami.xlsx` ani folder `rejsy-filmy`.
 
-## Rozdzielenie funkcji
+## Rozdzielenie generowania od publikacji
 
-- Trasa zmienia się rzadko. Jej generowanie może wymagać geokodera i lokalnego sea-routera, ale zgodne GeoJSON są używane ponownie.
-- Media można zmieniać bez ponownego liczenia trasy. Program czyta wyłącznie bieżący `media.xlsx`.
-- Stronę można przebudować z zapisanej geometrii i danych bez uruchamiania sea-routera.
+- `Uruchom-Rejsy.cmd` generuje trasy i kompletny wynik `outputs/podglad-leaflet`, a następnie otwiera go lokalnie.
+- `Publikuj-Rejsy.cmd` kopiuje do `docs` dokładnie sprawdzony wynik na podstawie manifestu sum kontrolnych.
+- Lokalna i publiczna mapa używają tego samego `index.html`, `app.js`, stylów, danych i geometrii; nie istnieją dwie implementacje prezentacji.
+- Żaden ze skryptów nie wykonuje commit ani push.
 
 ## Bezpieczeństwo danych
 
-`rejsy.xlsx` pozostaje jednym głównym skoroszytem. Program najpierw tworzy kopię bezpieczeństwa, zapisuje i sprawdza plik tymczasowy, a dopiero potem atomowo zastępuje właściwy plik. Zapisane `Lat`/`Lon` są używane bez ponownego geokodowania.
+`rejsy.xlsx` pozostaje jednym głównym skoroszytem. Program tworzy lokalny `rejsy.bak.xlsx`, zapisuje plik tymczasowy, a dopiero potem atomowo zastępuje właściwy plik. Zapisane `Lat`/`Lon` są używane bez ponownego geokodowania.
 
 ## Prezentacja
 
-Docelową prezentacją jest Leaflet na GitHub Pages. Google Earth, KML i `NetworkLink` nie należą do bieżącej architektury. Media są zwykłymi linkami HTTPS otwieranymi w nowej karcie; strona ich nie osadza i nie interpretuje nazwy pliku na Drive.
+Docelową prezentacją jest Leaflet — lokalnie i po ręcznej publikacji. KML jest tylko pomocniczym wynikiem kontroli. Media są zwykłymi opisowymi linkami HTTPS otwieranymi w nowej karcie; strona ich nie osadza i nie interpretuje nazwy pliku na Drive.

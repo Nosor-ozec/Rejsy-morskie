@@ -5,4 +5,4 @@
 - [Organizacja pracy i publikacja](organizacja-pracy.md)
 - [Media i ich pozycjonowanie](filmy.md)
 
-Katalog `docs/` jest równocześnie źródłem statycznej strony Leaflet publikowanej przez GitHub Pages.
+Pliki statycznej strony w `docs/` są publiczną kopią wyniku sprawdzonego wcześniej w `outputs/podglad-leaflet`. Przygotowuje je `Publikuj-Rejsy.cmd`; skrypt nie wykonuje operacji Git ani GitHub.

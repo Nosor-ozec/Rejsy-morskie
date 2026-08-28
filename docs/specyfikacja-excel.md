@@ -32,7 +32,7 @@ Liczba `0` w `Kiedy` oznacza datę startu, a `N` oznacza `Data_startu + N dni`. 
 
 Program aktualizuje go w tym samym `rejsy.xlsx`. Każdy wiersz opisuje jeden odcinek i zawiera: identyfikator, numer, port początkowy i końcowy, nazwę, dni i daty, dystans, względną ścieżkę GeoJSON, status i uwagi.
 
-Przed zapisem powstaje kopia w `routes/.backups/`, a wymiana właściwego pliku jest atomowa. Nie tworzy się dodatkowego skoroszytu wynikowego.
+Przed zapisem powstaje lokalna kopia `routes/rejsy.bak.xlsx`, a wymiana właściwego pliku jest atomowa. Nie tworzy się dodatkowego skoroszytu wynikowego.
 
 ## `routes/media.xlsx`
 

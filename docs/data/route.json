@@ -94,8 +94,12 @@
       "voyageId": "Rejs 3",
       "number": 1,
       "name": "Triest → Dubrownik",
+      "startPort": "Triest",
+      "endPort": "Dubrownik",
       "days": "Dni 1–2",
+      "travelDays": 2,
       "distanceNm": 326.7,
+      "geojson": "data/geojson/Rejs-3/geojson/01-Triest-Dubrownik.geojson",
       "coordinates": [
         [
           45.63446,
@@ -527,8 +531,12 @@
       "voyageId": "Rejs 3",
       "number": 2,
       "name": "Dubrownik → Katania",
+      "startPort": "Dubrownik",
+      "endPort": "Katania",
       "days": "Dni 3–4",
-      "distanceNm": 397.0,
+      "travelDays": 2,
+      "distanceNm": 397,
+      "geojson": "data/geojson/Rejs-3/geojson/02-Dubrownik-Katania.geojson",
       "coordinates": [
         [
           42.6491029,
@@ -804,8 +812,12 @@
       "voyageId": "Rejs 3",
       "number": 3,
       "name": "Katania → Civitavecchia",
+      "startPort": "Katania",
+      "endPort": "Civitavecchia",
       "days": "Dni 5–5",
+      "travelDays": 1,
       "distanceNm": 354.6,
+      "geojson": "data/geojson/Rejs-3/geojson/03-Katania-Civitavecchia.geojson",
       "coordinates": [
         [
           37.5023612,
@@ -1417,8 +1429,12 @@
       "voyageId": "Rejs 3",
       "number": 4,
       "name": "Civitavecchia → Savona",
+      "startPort": "Civitavecchia",
+      "endPort": "Savona",
       "days": "Dni 6–6",
+      "travelDays": 1,
       "distanceNm": 201.3,
+      "geojson": "data/geojson/Rejs-3/geojson/04-Civitavecchia-Savona.geojson",
       "coordinates": [
         [
           42.07901,
@@ -1886,8 +1902,12 @@
       "voyageId": "Rejs 3",
       "number": 5,
       "name": "Savona → Marsylia",
+      "startPort": "Savona",
+      "endPort": "Marsylia",
       "days": "Dni 7–7",
+      "travelDays": 1,
       "distanceNm": 198.2,
+      "geojson": "data/geojson/Rejs-3/geojson/05-Savona-Marsylia.geojson",
       "coordinates": [
         [
           44.3080251,
@@ -2547,8 +2567,12 @@
       "voyageId": "Rejs 3",
       "number": 6,
       "name": "Marsylia → Barcelona",
+      "startPort": "Marsylia",
+      "endPort": "Barcelona",
       "days": "Dni 8–8",
-      "distanceNm": 190.0,
+      "travelDays": 1,
+      "distanceNm": 190,
+      "geojson": "data/geojson/Rejs-3/geojson/06-Marsylia-Barcelona.geojson",
       "coordinates": [
         [
           43.2963986,
@@ -2976,8 +3000,12 @@
       "voyageId": "Rejs 3",
       "number": 7,
       "name": "Barcelona → Casablanca",
+      "startPort": "Barcelona",
+      "endPort": "Casablanca",
       "days": "Dni 9–11",
+      "travelDays": 3,
       "distanceNm": 731.9,
+      "geojson": "data/geojson/Rejs-3/geojson/07-Barcelona-Casablanca.geojson",
       "coordinates": [
         [
           41.35941,
@@ -3441,8 +3469,12 @@
       "voyageId": "Rejs 3",
       "number": 8,
       "name": "Casablanca → Las Palmas",
+      "startPort": "Casablanca",
+      "endPort": "Las Palmas",
       "days": "Dni 12–13",
+      "travelDays": 2,
       "distanceNm": 538.5,
+      "geojson": "data/geojson/Rejs-3/geojson/08-Casablanca-Las-Palmas.geojson",
       "coordinates": [
         [
           33.5945144,

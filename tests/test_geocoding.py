@@ -23,7 +23,7 @@ class StubProvider:
 
 
 @contextmanager
-def test_directory():
+def work_directory():
     path = Path(__file__).parent / "_work" / uuid4().hex
     path.mkdir(parents=True)
     yield path
@@ -78,7 +78,7 @@ class GeocodingTests(unittest.TestCase):
         provider = StubProvider(
             [GeocodingCandidate("Catania, Italy", 37.5, 15.09, "test")]
         )
-        with test_directory() as directory:
+        with work_directory() as directory:
             path = directory / "cache.json"
             geocoder = CachedGeocoder(provider, path)
             first = geocoder.resolve("Catania", "Włochy")
@@ -96,7 +96,7 @@ class GeocodingTests(unittest.TestCase):
                 GeocodingCandidate("Port B", 3, 4, "test"),
             ]
         )
-        with test_directory() as directory:
+        with work_directory() as directory:
             geocoder = CachedGeocoder(provider, directory / "cache.json")
             with self.assertRaisesRegex(AmbiguousPortError, "Port A"):
                 geocoder.resolve("Test", None)

@@ -35,7 +35,7 @@ class FakeRouter:
 
 
 @contextmanager
-def test_directory():
+def work_directory():
     path = Path(__file__).parent / "_work" / uuid4().hex
     path.mkdir(parents=True)
     yield path
@@ -43,7 +43,7 @@ def test_directory():
 
 class PipelineTests(unittest.TestCase):
     def test_generate_routes_writes_all_outputs(self) -> None:
-        with test_directory() as root:
+        with work_directory() as root:
             input_path = root / "input.xlsx"
             output_dir = root / "outputs"
             self._make_workbook(input_path)
@@ -52,7 +52,7 @@ class PipelineTests(unittest.TestCase):
 
             outputs = generate_routes(input_path, output_dir, geocoder, router)
 
-            workbook_path = output_dir / "rejs-uzupelniony.xlsx"
+            workbook_path = input_path
             workbook = load_workbook(workbook_path, data_only=True)
             porty = workbook["Porty"]
             etapy = workbook["Etapy"]
@@ -68,6 +68,7 @@ class PipelineTests(unittest.TestCase):
             self.assertTrue((output_dir / "R1" / "trasa.kml").exists())
             self.assertTrue((output_dir / "R1" / "geojson" / "01-A-B.geojson").exists())
             self.assertEqual(outputs[0], workbook_path)
+            self.assertTrue((root / "input.bak.xlsx").exists())
             self.assertEqual(router.penalties, [8.0])
 
             kml = ElementTree.parse(output_dir / "R1" / "trasa.kml")
