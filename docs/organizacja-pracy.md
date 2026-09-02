@@ -21,6 +21,10 @@ Uruchom `Uruchom-Rejsy.cmd`. Skrypt:
 
 Ten etap nie wymaga commita ani połączenia z GitHubem. Lokalna mapa jest pełnym wynikiem Leaflet: zawiera porty, rzeczywiste trasy GeoJSON, media i punkty `Na morzu`.
 
+Aktualizacja skoroszytu dotyczy danych wyliczanych (`Porty.Lat/Lon`, `Etapy`). Brakujące współrzędne są rozwiązywane w kolejności `Porty.Lat/Lon → Lokalizacje → geokoder zwykłego portu → błąd`. Arkusz `Lokalizacje` jest ręczną bazą referencyjną i program nigdy nie zmienia jego danych. Kolumny `Porty.Kiedy` i `Porty.Postoj_dni` pozostają po przebiegu dokładnie w pierwotnej postaci. Dla `+N` obowiązuje `data_bieżącego = data_poprzedniego + N + max(Postoj_dni - 1, 0)`. Data `RRRR-MM-DD` lub `N` bez znaku jest niezależną kotwicą i wymaga tylko zachowania chronologii względem poprzedniego postoju. Dni wpływu oraz `Dzien_od` i `Dzien_do` są przy każdym przebiegu liczone ponownie z `Porty`; stare wartości `Etapy` są zastępowane.
+
+Ręczne `Porty.Lat/Lon` punktów trasy są nienaruszalne. Gdy są puste, punkt może użyć wpisu `Lokalizacje` o tej samej znormalizowanej nazwie; program może skopiować te współrzędne do `Porty`, lecz nigdy nie uruchamia geokodera dla punktu trasy. Zmiana `Typ` pomiędzy `Punkt_trasy` i `Punkt_trasy_ukryty` zmienia wyłącznie widoczność technicznego znacznika, nie przebieg geometrii.
+
 ## Przygotowanie publikacji
 
 Po zaakceptowaniu podglądu uruchom `Publikuj-Rejsy.cmd`. Skrypt sprawdza sumy plików lokalnego wyniku i kopiuje dokładnie te same pliki prezentacji oraz danych do `docs`. Nie przelicza trasy, nie tworzy innej wersji mapy i nie wykonuje żadnej operacji Git ani GitHub.

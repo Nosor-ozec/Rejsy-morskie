@@ -6,6 +6,9 @@ from pathlib import Path
 from .excel_io import load_input
 from .geocoding import CachedGeocoder, NominatimGeocoder
 from .pipeline import build_schedule, generate_routes
+from .passages import generate_passages
+from .passage_editor import serve_passage_editor
+from .port_editor import serve_port_editor
 from .sea_router import HttpSeaRouter
 from .web import build_local_site, publish_site
 
@@ -41,6 +44,30 @@ def parser() -> argparse.ArgumentParser:
     )
     publish.add_argument("site_dir", type=Path)
     publish.add_argument("docs_dir", type=Path)
+
+    passages = commands.add_parser(
+        "passages", help="Wygeneruj techniczny passages.json z arkusza Lokalizacje"
+    )
+    passages.add_argument("input", type=Path)
+    passages.add_argument("output", type=Path)
+
+    editor = commands.add_parser(
+        "edit-passages", help="Otwórz lokalny edytor przejść na mapie"
+    )
+    editor.add_argument("input", type=Path)
+    editor.add_argument("--project-root", type=Path, required=True)
+    editor.add_argument("--host", default="127.0.0.1")
+    editor.add_argument("--port", type=int, default=8766)
+    editor.add_argument("--no-browser", action="store_true")
+
+    port_editor = commands.add_parser(
+        "edit-ports", help="Otwórz lokalny edytor portów i punktów rejsu na mapie"
+    )
+    port_editor.add_argument("input", type=Path)
+    port_editor.add_argument("--project-root", type=Path, required=True)
+    port_editor.add_argument("--host", default="127.0.0.1")
+    port_editor.add_argument("--port", type=int, default=8767)
+    port_editor.add_argument("--no-browser", action="store_true")
 
     return root
 
@@ -84,6 +111,19 @@ def main() -> None:
         elif args.command == "publish":
             outputs = publish_site(args.site_dir, args.docs_dir)
             print(f"Przygotowano {len(outputs)} plików publicznych w {args.docs_dir}")
+        elif args.command == "passages":
+            passages = generate_passages(args.input, args.output)
+            print(f"Wygenerowano {len(passages)} przejść: {args.output}")
+        elif args.command == "edit-passages":
+            serve_passage_editor(
+                args.input, args.project_root, args.host, args.port,
+                open_browser=not args.no_browser,
+            )
+        elif args.command == "edit-ports":
+            serve_port_editor(
+                args.input, args.project_root, args.host, args.port,
+                open_browser=not args.no_browser,
+            )
     except (OSError, RuntimeError, ValueError) as error:
         raise SystemExit(f"Błąd: {error}") from None
 

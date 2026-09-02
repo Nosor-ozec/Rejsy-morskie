@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edytor portów rejsu</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside>
+    <h1>Porty rejsu</h1>
+    <label for="voyage-select">Rejs</label>
+    <select id="voyage-select"></select>
+    <div class="tools">
+      <button id="add-port" type="button">Dodaj port</button>
+      <button id="add-point" type="button">Dodaj punkt trasy</button>
+      <button id="add-hidden" type="button">Dodaj ukryty punkt</button>
+      <button id="remove" type="button">Usuń pozycję</button>
+      <button id="move-up" type="button">Przesuń wyżej</button>
+      <button id="move-down" type="button">Przesuń niżej</button>
+    </div>
+    <p id="hint">Wybierz pozycję z listy. Znaczniki można przeciągać.</p>
+    <ol id="call-list"></ol>
+    <div class="footer-actions">
+      <button id="cancel" type="button">Anuluj / odśwież</button>
+      <button id="save" class="primary" type="button">Zapisz</button>
+    </div>
+    <p id="status" role="status"></p>
+  </aside>
+  <main id="map" aria-label="Mapa portów i punktów rejsu"></main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

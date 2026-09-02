@@ -37,9 +37,15 @@ def generate_routes(
     calls_by_voyage: dict[str, list[PortCall]] = defaultdict(list)
     for call in calls:
         if call.lat is None or call.lon is None:
+            if call.is_route_point:
+                raise ValueError(
+                    f"Punkt trasy {call.port}: brak współrzędnych w Porty "
+                    "i Lokalizacje; punkty trasy nie są geokodowane"
+                )
             candidate = geocoder.resolve(call.port, call.country)
             call.lat = candidate.lat
             call.lon = candidate.lon
+            call.coordinates_source = "geocoder"
         calls_by_voyage[call.voyage_id].append(call)
 
     all_legs: list[Leg] = []
@@ -52,24 +58,44 @@ def generate_routes(
         geojson_dir = voyage_dir / "geojson"
         kml_legs: list[tuple[Leg, list[tuple[float, float]]]] = []
 
-        for leg, start, end in zip(legs, voyage_calls, voyage_calls[1:]):
+        real_ports = [call for call in voyage_calls if call.is_real_port]
+        for leg, start, end in zip(legs, real_ports, real_ports[1:]):
+            route_calls = [start, *leg.route_points, end]
             if start.lat is None or start.lon is None or end.lat is None or end.lon is None:
                 leg.status = "brak_wspolrzednych"
                 continue
             try:
-                result = sea_router.route(
-                    start.lat,
-                    start.lon,
-                    end.lat,
-                    end.lon,
-                    penalty=coastal_penalty,
+                coordinates: list[tuple[float, float]] = []
+                segment_distances: list[float | None] = []
+                for segment_start, segment_end in zip(route_calls, route_calls[1:]):
+                    assert segment_start.lat is not None and segment_start.lon is not None
+                    assert segment_end.lat is not None and segment_end.lon is not None
+                    result = sea_router.route(
+                        segment_start.lat,
+                        segment_start.lon,
+                        segment_end.lat,
+                        segment_end.lon,
+                        penalty=coastal_penalty,
+                    )
+                    segment_coordinates = _coordinates_lon_lat(result.geometry)
+                    coordinates.extend(
+                        segment_coordinates if not coordinates else segment_coordinates[1:]
+                    )
+                    segment_distances.append(result.distance_nm)
+                geometry = {
+                    "type": "LineString",
+                    "coordinates": [[lon, lat] for lon, lat in coordinates],
+                }
+                distance_nm = (
+                    sum(distance for distance in segment_distances if distance is not None)
+                    if all(distance is not None for distance in segment_distances)
+                    else None
                 )
-                coordinates = _coordinates_lon_lat(result.geometry)
                 geojson_path = geojson_dir / f"{leg.number:02d}-{_safe_name(leg.name)}.geojson"
-                _write_geojson(geojson_path, leg, result.geometry, result.distance_nm)
+                _write_geojson(geojson_path, leg, geometry, distance_nm)
                 leg.distance_nm = (
-                    round(result.distance_nm, 1)
-                    if result.distance_nm is not None
+                    round(distance_nm, 1)
+                    if distance_nm is not None
                     else None
                 )
                 leg.geojson_path = geojson_path.relative_to(output_dir)
@@ -119,6 +145,16 @@ def _write_geojson(
             "etap_nr": leg.number,
             "zakres_dni": leg.day_range,
             "distance_nm": distance_nm,
+            "route_points": [
+                {
+                    "name": point.port,
+                    "order": point.order,
+                    "type": point.call_type,
+                    "lat": point.lat,
+                    "lon": point.lon,
+                }
+                for point in leg.route_points
+            ],
         },
     }
     path.parent.mkdir(parents=True, exist_ok=True)

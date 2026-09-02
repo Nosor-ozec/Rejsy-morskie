@@ -51,9 +51,19 @@ def export_kml(
     ports_folder = SubElement(document, "Folder")
     SubElement(ports_folder, "name").text = "Porty"
     for call in calls:
-        if call.lat is None or call.lon is None:
+        if not call.is_real_port or call.lat is None or call.lon is None:
             continue
         marker = SubElement(ports_folder, "Placemark")
+        SubElement(marker, "name").text = call.port
+        point = SubElement(marker, "Point")
+        SubElement(point, "coordinates").text = f"{call.lon},{call.lat},0"
+
+    route_points_folder = SubElement(document, "Folder")
+    SubElement(route_points_folder, "name").text = "Punkty trasy"
+    for call in calls:
+        if not call.is_visible_route_point or call.lat is None or call.lon is None:
+            continue
+        marker = SubElement(route_points_folder, "Placemark")
         SubElement(marker, "name").text = call.port
         point = SubElement(marker, "Point")
         SubElement(point, "coordinates").text = f"{call.lon},{call.lat},0"

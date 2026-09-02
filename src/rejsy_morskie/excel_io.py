@@ -6,16 +6,18 @@ from typing import Iterable
 
 from openpyxl import load_workbook
 
-from .models import Leg, PortCall, Voyage
+from .models import Leg, Location, PortCall, Voyage
 from .schedule import parse_excel_date
 
 REJSY_COLUMNS = {
     "Rejs_ID", "Nazwa_rejsu", "Data_startu", "Kolor_trasy", "CA", "Uwagi"
 }
 PORTY_COLUMNS = {
-    "Rejs_ID", "Kolejnosc", "Port", "Kraj", "Kiedy",
+    "Rejs_ID", "Kolejnosc", "Port", "Kraj", "Kiedy", "Typ",
     "Postoj_dni", "Lat", "Lon", "Uwagi"
 }
+ROUTE_POINT_TYPES = {"Punkt_trasy", "Punkt_trasy_ukryty"}
+LOKALIZACJE_COLUMNS = {"Nazwa", "Kraj", "Lat", "Lon", "Typ", "Uwagi"}
 ETAPY_COLUMNS = [
     "Rejs_ID", "Etap_nr", "Port_start", "Port_koniec", "Nazwa_etapu",
     "Dzien_od", "Dzien_do", "Data_od", "Data_do", "Zakres_dni",
@@ -54,6 +56,56 @@ def _inherit_voyage_id(
     return previous_voyage_id
 
 
+def _normalize_location_name(value: object) -> str:
+    return str(value).strip().casefold()
+
+
+def _load_locations(workbook) -> dict[str, Location]:
+    if "Lokalizacje" not in workbook.sheetnames:
+        return {}
+    sheet = workbook["Lokalizacje"]
+    _require_columns(sheet, LOKALIZACJE_COLUMNS)
+    locations: dict[str, Location] = {}
+    rows_by_key: dict[str, int] = {}
+    for excel_row, row in _rows(sheet):
+        name = str(row["Nazwa"] or "").strip()
+        if not name:
+            raise ValueError(f"Lokalizacje, wiersz {excel_row}: Nazwa nie może być pusta")
+        key = _normalize_location_name(name)
+        if key in locations:
+            raise ValueError(
+                f"Lokalizacje, wiersze {rows_by_key[key]} i {excel_row}: "
+                f"powtórzona Nazwa po normalizacji: {name}"
+            )
+        lat, lon = row["Lat"], row["Lon"]
+        if lat is None or lon is None:
+            raise ValueError(
+                f"Lokalizacje, wiersz {excel_row} ({name}): Lat i Lon są obowiązkowe"
+            )
+        try:
+            latitude, longitude = float(lat), float(lon)
+        except (TypeError, ValueError) as error:
+            raise ValueError(
+                f"Lokalizacje, wiersz {excel_row} ({name}): Lat i Lon muszą być liczbami"
+            ) from error
+        if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+            raise ValueError(
+                f"Lokalizacje, wiersz {excel_row} ({name}): Lat/Lon poza zakresem"
+            )
+        locations[key] = Location(
+            name=name,
+            country=str(row["Kraj"]).strip() if row["Kraj"] is not None else None,
+            lat=latitude,
+            lon=longitude,
+            location_type=(
+                str(row["Typ"]).strip() if row["Typ"] is not None else None
+            ),
+            notes=str(row["Uwagi"]).strip() if row["Uwagi"] is not None else None,
+        )
+        rows_by_key[key] = excel_row
+    return locations
+
+
 def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
     workbook = load_workbook(path)
     for name in ("Rejsy", "Porty", "Etapy"):
@@ -62,6 +114,7 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
 
     _require_columns(workbook["Rejsy"], REJSY_COLUMNS)
     _require_columns(workbook["Porty"], PORTY_COLUMNS)
+    locations = _load_locations(workbook)
 
     voyages: dict[str, Voyage] = {}
     for _, row in _rows(workbook["Rejsy"]):
@@ -88,20 +141,45 @@ def load_input(path: Path) -> tuple[dict[str, Voyage], list[PortCall]]:
             raise ValueError(
                 f"Porty, wiersz {excel_row}: nieznany Rejs_ID {voyage_id}"
             )
+        port_name = str(row["Port"]).strip()
         lat, lon = row["Lat"], row["Lon"]
+        call_type = str(row["Typ"] or "").strip() or None
+        if call_type is not None and call_type not in ROUTE_POINT_TYPES:
+            raise ValueError(
+                f"Porty, wiersz {excel_row}: Typ musi być pusty, "
+                "Punkt_trasy albo Punkt_trasy_ukryty"
+            )
         if (lat is None) != (lon is None):
             raise ValueError(f"Port {row['Port']}: Lat i Lon muszą występować razem")
+        coordinates_source = "porty" if lat is not None else None
+        location = locations.get(_normalize_location_name(port_name))
+        if lat is None and location is not None:
+            lat, lon = location.lat, location.lon
+            coordinates_source = "lokalizacje"
+        if call_type in ROUTE_POINT_TYPES and (lat is None or lon is None):
+            raise ValueError(
+                f"Punkt trasy {row['Port']}: Lat i Lon są obowiązkowe; "
+                "brak Lat/Lon w Porty i wpisu w Lokalizacje. "
+                "Punkty trasy nie są geokodowane"
+            )
+        stay_days = int(row["Postoj_dni"]) if row["Postoj_dni"] is not None else 1
+        if call_type in ROUTE_POINT_TYPES and stay_days != 0:
+            raise ValueError(
+                f"Punkt trasy {row['Port']}: Postoj_dni musi wynosić 0"
+            )
         calls.append(
             PortCall(
                 voyage_id=voyage_id,
                 order=int(row["Kolejnosc"]),
-                port=str(row["Port"]).strip(),
+                port=port_name,
                 country=str(row["Kraj"]).strip() if row["Kraj"] is not None else None,
                 when=row["Kiedy"],
-                stay_days=int(row["Postoj_dni"]) if row["Postoj_dni"] is not None else 1,
+                stay_days=stay_days,
                 lat=float(lat) if lat is not None else None,
                 lon=float(lon) if lon is not None else None,
                 notes=str(row["Uwagi"]).strip() if row["Uwagi"] is not None else None,
+                call_type=call_type,
+                coordinates_source=coordinates_source,
             )
         )
     return voyages, calls
@@ -225,5 +303,8 @@ def _write_port_coordinates(sheet, calls: list[PortCall]) -> None:
         call = call_by_key.get((previous_voyage_id, int(order)))
         if call is None:
             continue
-        sheet.cell(row_number, headers["Lat"]).value = call.lat
-        sheet.cell(row_number, headers["Lon"]).value = call.lon
+        if call.coordinates_source == "porty":
+            continue
+        if call.lat is not None and call.lon is not None:
+            sheet.cell(row_number, headers["Lat"]).value = call.lat
+            sheet.cell(row_number, headers["Lon"]).value = call.lon

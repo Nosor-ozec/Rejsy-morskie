@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/Lvdwardt/sea-router.git",
+    "commit": "65cc022269d42f69ffad14fb1b69cce641ee6170",
+    "archive_url": "https://github.com/Lvdwardt/sea-router/archive/65cc022269d42f69ffad14fb1b69cce641ee6170.zip",
+    "observed_release_tag": "graph-depth-16",
+    "observed_release_tag_commit": "b97958666a3ce1fbd86823b2f144c1fce4f125c0",
+    "critical_git_blob_sha1": {
+      "rust/Cargo.lock": "53585e4a9f55bfd00c001961a65c6c8def9fe74c",
+      "rust/Cargo.toml": "189401048822f0829c9df092e2a45cc216218ea9",
+      "rust/src/canals.rs": "ae2925d9895c077b2c60f16a367fd44ff5c5de67",
+      "rust/src/generate.rs": "0018f1c6b6e47726f23fec1b35ef5d3d85bd3323",
+      "rust/src/graph.rs": "5dad839689d1b2a68aca05d6df3152bc9653e945",
+      "rust/src/graph_builder.rs": "982f2b8384023ccc44ad31d9eac7e86b2e68fa5c",
+      "rust/src/land.rs": "2664eaea05d653b2f83bd943df70a9ebe03f8155",
+      "rust/src/los.rs": "55f0c060eb8b63eda6a9cd349856d94c946d9296",
+      "rust/src/main.rs": "6c39d15cd496285c73f8423bcdc248520929ab31",
+      "rust/src/router.rs": "eaed26acc295339030316620a8af6b5a40665c08",
+      "rust/src/server.rs": "c104f6051514b95611b2c174f59f21275a85021f"
+    }
+  },
+  "toolchain": {
+    "rustup_toolchain": "1.97.1-x86_64-pc-windows-msvc",
+    "rustc_version": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo_version": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "visual_studio_build_tools": "2022 17.14.39",
+    "visual_cpp_component": "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    "build_command": "rustup run 1.97.1-x86_64-pc-windows-msvc cargo build --release --locked",
+    "release_profile": {
+      "opt_level": 3,
+      "lto": true,
+      "codegen_units": 1
+    }
+  },
+  "land_data": {
+    "release_asset_url": "https://github.com/Lvdwardt/sea-router/releases/download/graph-depth-16/osm_land_simplified.geojson.json.gz",
+    "gzip_sha256": "E36737C0EE4CB85AB42C421DCEFC076E7D5D15E4A94FDD730766A016B7F48D1E",
+    "uncompressed_sha256": "A61AAA5684AA18BCC7C0F7F6A73A6537F1556440E463B5FBA38DD6391713A3F7",
+    "original_osm_url": "https://osmdata.openstreetmap.de/download/land-polygons-complete-4326.zip",
+    "conversion": "ogr2ogr -f GeoJSON osm_land_simplified.geojson.json land-polygons-complete-4326/land_polygons.shp",
+    "raster_cache": {
+      "cell_degrees": 0.02,
+      "columns": 18000,
+      "rows": 9000,
+      "format_version": 3,
+      "observed_sha256": "A84FA75294BE022B7FA5FC0F813560F346A35780739230404ABF99AF107ED180"
+    }
+  },
+  "base_graph_asset": {
+    "url": "https://github.com/Lvdwardt/sea-router/releases/download/graph-depth-16/sea-graph.json.gz",
+    "gzip_sha256": "7EE3F3CBAE97C394F2850A72B2FC687DF09275E956F95D8F456A4FA1BB576425",
+    "uncompressed_sha256": "2B319816A77EB372907EA10FEB20DBCA7DF0A6B208A4EA6B4D9BE3FEAA5AE649",
+    "node_count": 5786546,
+    "edge_count": 9379126,
+    "note": "Zachowana kopia bazowa zawiera Suez, Panamę i Korynt. Instalator nie używa jej jako wyniku: generuje graf od nowa z przypiętego kodu i danych lądowych."
+  },
+  "graph_generation": {
+    "depth": 16,
+    "command": "sea-router-rs.exe generate 16 <data-dir>",
+    "world_bbox": [-180.0, -90.0, 180.0, 90.0],
+    "adaptive_sample_max_degrees": 0.25,
+    "open_water_coarsening_max_passes": 20,
+    "edge_sampling_km": 0.5,
+    "short_edge_threshold_km": 3.0,
+    "short_edge_sampling_km": 0.05,
+    "coastal_buffer_km_approx": 1.5,
+    "canal_endpoint_nearest_nodes": 5,
+    "canal_endpoint_maximum_km": 100.0
+  },
+  "expected_custom_build": {
+    "source_passages_sha256": "3A93A75DD6E6AC551F27208A6E29F8B9CC87FABADA39A49681901913B4F1C2E9",
+    "graph_sha256": "544C9AF131A50C85B500F5A9D44CD12B7A8A666E793E66393FC69FBF1E5F6406",
+    "node_count": 5786558,
+    "edge_count": 9379147,
+    "semantic_graph": {
+      "format_version": 1,
+      "ordered_nodes_sha256": "83C064612315CC8E2CB74EC8C95BA43C4909B3CFDCDCF3B6B69BB3D96D964257",
+      "sorted_edges_sha256": "C225A050A7308E3C89B1BB25D1792083677B28413CB1733D9D173883F156C258",
+      "description": "Węzły: identyfikator wynika z pozycji, zapis kanoniczny SRN1 + count u64 LE + trójki f64 LE. Krawędzie: multizbiór trójek u32 (from,to,weight) posortowany leksykograficznie, zapis SRE1 + count u64 LE. Surowy graph_sha256 pozostaje wartością audytową starej serializacji JSON."
+    },
+    "binary_sha256_observed": "24095FFD645780969A99C08A3ED5AD8551FF652BADC7AAC45A7F95AEA37AE703"
+  }
+}

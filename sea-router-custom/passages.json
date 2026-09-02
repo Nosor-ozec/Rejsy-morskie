@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "coordinate_order": "longitude_latitude",
+  "generated_from": "routes/rejsy.xlsx:Lokalizacje",
+  "passages": [
+    {
+      "id": "arenas",
+      "name": "Arenas",
+      "status": "development",
+      "origin": "routes/rejsy.xlsx:Lokalizacje",
+      "reason": "Ręcznie zatwierdzone punkty przejścia używane wyłącznie do routingu i wizualizacji, nie do nawigacji.",
+      "waypoints": [
+        [
+          -72.14172363281251,
+          -54.53861311097948
+        ],
+        [
+          -71.83959960937501,
+          -54.3789577312402
+        ],
+        [
+          -71.50726318359376,
+          -54.35335505466622
+        ],
+        [
+          -71.30676269531251,
+          -54.35175435742469
+        ],
+        [
+          -71.25389099121095,
+          -54.36735849588775
+        ],
+        [
+          -71.19964599609376,
+          -54.39974815563759
+        ],
+        [
+          -71.11106872558595,
+          -54.42212606516787
+        ],
+        [
+          -70.98815917968751,
+          -54.36975860652541
+        ]
+      ],
+      "injection": {
+        "node_depth": 1.0,
+        "chain_consecutive_waypoints": true,
+        "endpoint_nearest_nodes": 5,
+        "maximum_endpoint_connection_km": 100.0
+      },
+      "observed_graph_delta": {
+        "nodes": 8,
+        "edges": 17
+      }
+    },
+    {
+      "id": "beagle",
+      "name": "Beagle",
+      "status": "development",
+      "origin": "routes/rejsy.xlsx:Lokalizacje",
+      "reason": "Ręcznie zatwierdzone punkty przejścia używane wyłącznie do routingu i wizualizacji, nie do nawigacji.",
+      "waypoints": [
+        [
+          -66.71173095703126,
+          -55.08779989547407
+        ],
+        [
+          -66.81610107421876,
+          -55.01542594056298
+        ],
+        [
+          -67.10861206054689,
+          -54.94686495788289
+        ],
+        [
+          -67.28027343750001,
+          -54.91214584328124
+        ],
+        [
+          -67.36953735351564,
+          -54.91924991842269
+        ],
+        [
+          -67.41073608398439,
+          -54.9172766900055
+        ],
+        [
+          -67.4553680419922,
+          -54.915303364829
+        ],
+        [
+          -67.47802734375001,
+          -54.92556359916314
+        ],
+        [
+          -67.51922607421876,
+          -54.91806599298336
+        ],
+        [
+          -67.57278442382814,
+          -54.91924991842269
+        ],
+        [
+          -67.5981903076172,
+          -54.9275364212175
+        ],
+        [
+          -67.60986328125001,
+          -54.91451400766525
+        ],
+        [
+          -67.66067504882814,
+          -54.90938280871963
+        ],
+        [
+          -67.79113769531251,
+          -54.89714423283752
+        ],
+        [
+          -67.98065185546876,
+          -54.87621159806295
+        ],
+        [
+          -68.15505981445314,
+          -54.83866361297512
+        ],
+        [
+          -68.23883056640626,
+          -54.82403020102306
+        ],
+        [
+          -68.29341888427736,
+          -54.81052914229313
+        ]
+      ],
+      "injection": {
+        "node_depth": 1.0,
+        "chain_consecutive_waypoints": true,
+        "endpoint_nearest_nodes": 5,
+        "maximum_endpoint_connection_km": 100.0
+      },
+      "observed_graph_delta": {
+        "nodes": 18,
+        "edges": 27
+      }
+    },
+    {
+      "id": "strait-of-messina",
+      "name": "Strait of Messina",
+      "status": "stable",
+      "origin": "routes/rejsy.xlsx:Lokalizacje",
+      "reason": "Ręcznie zatwierdzone punkty przejścia używane wyłącznie do routingu i wizualizacji, nie do nawigacji.",
+      "waypoints": [
+        [
+          15.61879,
+          38.149
+        ],
+        [
+          15.61625,
+          38.165
+        ],
+        [
+          15.61378,
+          38.181
+        ],
+        [
+          15.61486,
+          38.195
+        ],
+        [
+          15.6165,
+          38.211
+        ],
+        [
+          15.61798,
+          38.2307
+        ],
+        [
+          15.63144,
+          38.238
+        ],
+        [
+          15.65029,
+          38.245
+        ],
+        [
+          15.66914,
+          38.252
+        ],
+        [
+          15.68799,
+          38.259
+        ],
+        [
+          15.69622,
+          38.266
+        ],
+        [
+          15.69986,
+          38.2705
+        ]
+      ],
+      "injection": {
+        "node_depth": 1.0,
+        "chain_consecutive_waypoints": true,
+        "endpoint_nearest_nodes": 5,
+        "maximum_endpoint_connection_km": 100.0
+      },
+      "observed_graph_delta": {
+        "nodes": 12,
+        "edges": 21
+      }
+    },
+    {
+      "id": "ushuaia",
+      "name": "Ushuaia",
+      "status": "development",
+      "origin": "routes/rejsy.xlsx:Lokalizacje",
+      "reason": "Ręcznie zatwierdzone punkty przejścia używane wyłącznie do routingu i wizualizacji, nie do nawigacji.",
+      "waypoints": [
+        [
+          -68.29341888427736,
+          -54.8135462539002
+        ],
+        [
+          -68.23814392089845,
+          -54.83777389479572
+        ],
+        [
+          -68.24415206909181,
+          -54.8542799155873
+        ],
+        [
+          -68.32242965698244,
+          -54.87749551605334
+        ],
+        [
+          -68.37959289550783,
+          -54.89793393064139
+        ],
+        [
+          -68.40431213378908,
+          -54.92950914652504
+        ],
+        [
+          -68.38851928710939,
+          -54.94942824953336
+        ],
+        [
+          -68.35762023925783,
+          -54.97938691691876
+        ],
+        [
+          -68.35865020751955,
+          -54.98510017758563
+        ],
+        [
+          -68.34388732910158,
+          -54.98490318213215
+        ],
+        [
+          -68.3284378051758,
+          -54.99869052927257
+        ],
+        [
+          -68.30955505371095,
+          -55.01759118938483
+        ],
+        [
+          -68.26560974121095,
+          -55.05438253167186
+        ]
+      ],
+      "injection": {
+        "node_depth": 1.0,
+        "chain_consecutive_waypoints": true,
+        "endpoint_nearest_nodes": 5,
+        "maximum_endpoint_connection_km": 100.0
+      },
+      "observed_graph_delta": {
+        "nodes": 13,
+        "edges": 22
+      }
+    }
+  ]
+}

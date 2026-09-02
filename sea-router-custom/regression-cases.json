@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "coordinate_order": "longitude_latitude",
+  "cases": [
+    {
+      "id": "messina",
+      "name": "Cieśnina Mesyńska",
+      "enabled": true,
+      "start": [15.50, 38.05],
+      "end": [15.78, 38.34],
+      "penalty": 5.0,
+      "max_detour_ratio": 1.4,
+      "allowed_bbox": [15.45, 38.00, 15.85, 38.40],
+      "checkpoints": [
+        {"point": [15.61650, 38.21100], "max_distance_km": 4.0},
+        {"point": [15.66914, 38.25200], "max_distance_km": 4.0}
+      ]
+    },
+    {
+      "id": "suez",
+      "name": "Kanał Sueski",
+      "enabled": true,
+      "start": [32.25, 31.35],
+      "end": [32.65, 29.80],
+      "penalty": 5.0,
+      "max_detour_ratio": 1.4,
+      "allowed_bbox": [32.15, 29.70, 32.75, 31.45],
+      "checkpoints": [
+        {"point": [32.3043, 31.2200], "max_distance_km": 7.0},
+        {"point": [32.3353, 30.7482], "max_distance_km": 7.0},
+        {"point": [32.3500, 30.4522], "max_distance_km": 7.0},
+        {"point": [32.5607, 29.9303], "max_distance_km": 7.0}
+      ]
+    },
+    {
+      "id": "panama",
+      "name": "Kanał Panamski",
+      "enabled": true,
+      "start": [-79.98, 9.45],
+      "end": [-79.45, 8.82],
+      "penalty": 5.0,
+      "max_detour_ratio": 1.4,
+      "allowed_bbox": [-80.10, 8.70, -79.35, 9.55],
+      "checkpoints": [
+        {"point": [-79.913, 9.360], "max_distance_km": 12.0},
+        {"point": [-79.820, 9.190], "max_distance_km": 5.0},
+        {"point": [-79.640, 9.050], "max_distance_km": 5.0},
+        {"point": [-79.530, 8.900], "max_distance_km": 5.0}
+      ]
+    },
+    {
+      "id": "corinth",
+      "name": "Kanał Koryncki",
+      "enabled": true,
+      "start": [22.93, 37.95],
+      "end": [23.03, 37.91],
+      "penalty": 1.0,
+      "max_detour_ratio": 1.5,
+      "allowed_bbox": [22.85, 37.85, 23.10, 38.00],
+      "checkpoints": [
+        {"point": [22.953, 37.941], "max_distance_km": 5.0},
+        {"point": [22.984, 37.935], "max_distance_km": 5.0},
+        {"point": [23.003, 37.918], "max_distance_km": 5.0}
+      ]
+    },
+    {
+      "id": "beagle",
+      "name": "Kanał Beagle",
+      "enabled": true,
+      "start": [-67.6170, -54.9330],
+      "end": [-68.3084, -54.8073],
+      "penalty": 5.0,
+      "max_detour_ratio": 1.35,
+      "allowed_bbox": [-68.38, -54.98, -67.55, -54.76],
+      "checkpoints": [
+        {"point": [-67.6400, -54.9200], "max_distance_km": 5.0},
+        {"point": [-67.7000, -54.9000], "max_distance_km": 5.0},
+        {"point": [-67.8500, -54.8650], "max_distance_km": 5.0},
+        {"point": [-68.05522, -54.85415], "max_distance_km": 5.0}
+      ]
+    },
+    {
+      "id": "cockburn",
+      "name": "Cockburn Channel",
+      "enabled": false,
+      "status": "planned",
+      "reason": "Do uzupełnienia po zatwierdzeniu korytarza i punktów kontrolnych."
+    },
+    {
+      "id": "magdalena",
+      "name": "Magdalena Channel",
+      "enabled": false,
+      "status": "planned",
+      "reason": "Do uzupełnienia po zatwierdzeniu korytarza i punktów kontrolnych."
+    },
+    {
+      "id": "magellan-entry",
+      "name": "Przejście do Cieśniny Magellana",
+      "enabled": false,
+      "status": "planned",
+      "reason": "Do uzupełnienia po zatwierdzeniu korytarza i punktów kontrolnych."
+    }
+  ]
+}

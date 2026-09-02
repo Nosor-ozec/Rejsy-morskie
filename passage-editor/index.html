@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edytor przejść sea-routera</title>
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Rejsy morskie</p>
+      <h1>Edytor przejść</h1>
+    </div>
+    <div class="count"><strong id="point-count">0</strong><span>punktów</span></div>
+  </header>
+
+  <main>
+    <aside>
+      <label for="passage-select">Przejście</label>
+      <div class="row">
+        <select id="passage-select" aria-label="Wybierz przejście"></select>
+        <button id="new-passage" class="secondary">Nowe przejście</button>
+      </div>
+
+      <label for="passage-status" class="status-label">Status przejścia</label>
+      <select id="passage-status" aria-label="Status przejścia">
+        <option value="development">development — projektowane</option>
+        <option value="stable">stable — chronione regresją</option>
+      </select>
+
+      <div class="tools" aria-label="Narzędzia edycji">
+        <button id="add-point">Dodaj punkt</button>
+        <button id="insert-point" class="secondary">Wstaw po zaznaczonym</button>
+        <button id="delete-point" class="danger">Usuń punkt</button>
+      </div>
+
+      <p class="hint" id="mode-hint">Wybierz narzędzie, a potem kliknij mapę.</p>
+
+      <ol id="point-list" class="point-list"></ol>
+
+      <div class="reorder">
+        <button id="move-up" class="secondary">Przesuń wyżej</button>
+        <button id="move-down" class="secondary">Przesuń niżej</button>
+      </div>
+
+      <div class="actions">
+        <button id="save">Zapisz</button>
+        <button id="cancel" class="secondary">Anuluj / odśwież</button>
+      </div>
+      <p id="status" role="status"></p>
+      <p class="footnote">Zapis zmienia wyłącznie wiersze wybranego przejścia w arkuszu <strong>Lokalizacje</strong>. Status <strong>stable</strong> wymaga aktywnej regresji; <strong>development</strong> pozwala na iteracyjną kontrolę wizualną. Sea-router aktualizuje się osobno.</p>
+    </aside>
+    <section id="map" aria-label="Mapa punktów przejścia"></section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

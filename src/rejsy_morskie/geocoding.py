@@ -45,12 +45,14 @@ class AmbiguousPortError(ValueError):
             message = (
                 f"Port {port}, {country or 'bez kraju'} jest niejednoznaczny. "
                 f"Znaleziono {len(candidates)} kandydatów:\n{details}\n"
-                "Uzupełnij Kraj albo wpisz zatwierdzone Lat/Lon w arkuszu Porty."
+                "Uzupełnij Kraj albo dodaj zatwierdzone współrzędne do "
+                "Porty lub Lokalizacje."
             )
         else:
             message = (
                 f"Nie znaleziono portu {port}, {country or 'bez kraju'}. "
-                "Uzupełnij Kraj lub wpisz Lat/Lon w arkuszu Porty."
+                "Uzupełnij Kraj lub dodaj zatwierdzone współrzędne do "
+                "arkusza Lokalizacje (ewentualnie bezpośrednio do Porty)."
             )
         super().__init__(message)
 

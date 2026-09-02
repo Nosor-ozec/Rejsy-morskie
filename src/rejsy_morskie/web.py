@@ -5,6 +5,7 @@ import json
 import math
 import re
 import shutil
+from collections import defaultdict
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -12,6 +13,7 @@ from openpyxl import load_workbook
 
 from .excel_io import load_input
 from .kml import NAMED_COLORS
+from .models import PortCall
 
 STATIC_FILES = ("index.html", "app.js", "style.css")
 STATIC_DIRS = ("vendor",)
@@ -42,8 +44,8 @@ def build_local_site(
         shutil.rmtree(data_dir)
     data_dir.mkdir(parents=True)
 
-    route_data, leg_by_port = _route_data(rejsy_path, outputs_dir, data_dir)
-    media_data = _media_data(media_path, rejsy_path, leg_by_port)
+    route_data, bases_by_name = _route_data(rejsy_path, outputs_dir, data_dir)
+    media_data = _media_data(media_path, rejsy_path, bases_by_name)
     _write_json(data_dir / "route.json", route_data)
     _write_json(data_dir / "media.json", media_data)
 
@@ -107,23 +109,32 @@ def _copy_assets(assets_dir: Path, site_dir: Path) -> None:
 
 def _route_data(
     rejsy_path: Path, outputs_dir: Path, data_dir: Path
-) -> tuple[dict[str, object], dict[str, dict[str, object]]]:
+) -> tuple[dict[str, object], dict[str, list[dict[str, object]]]]:
     voyages, calls = load_input(rejsy_path)
     ports = []
-    port_keys: dict[str, object] = {}
+    route_points = []
+    base_by_visit: dict[tuple[str, int], dict[str, object]] = {}
+    bases_by_name: dict[str, list[dict[str, object]]] = defaultdict(list)
     for call in sorted(calls, key=lambda item: (item.voyage_id, item.order)):
         if call.lat is None or call.lon is None:
             raise ValueError(f"Port {call.port}: brak współrzędnych")
-        key = call.port.casefold()
-        if key in port_keys:
-            raise ValueError(f"Nazwa portu nie jest unikalna: {call.port}")
-        port_keys[key] = call
-        ports.append({
+        key = _name_key(call.port)
+        visit_key = (call.voyage_id, call.order)
+        base = {"call": call, "leg": None, "baseFraction": 0.0}
+        base_by_visit[visit_key] = base
+        bases_by_name[key].append(base)
+        item = {
             "voyageId": call.voyage_id,
             "order": call.order,
+            "visitId": _visit_id(call),
             "name": call.port,
             "position": [call.lat, call.lon],
-        })
+            "stayDays": call.stay_days,
+        }
+        if call.is_real_port:
+            ports.append(item)
+        elif call.is_visible_route_point:
+            route_points.append(item)
 
     workbook = load_workbook(rejsy_path, data_only=True, read_only=True)
     sheet = workbook["Etapy"]
@@ -141,7 +152,12 @@ def _route_data(
         raise ValueError(f"Arkusz Etapy: brak kolumn {sorted(missing)}")
 
     legs = []
-    leg_by_port: dict[str, dict[str, object]] = {}
+    real_ports_by_voyage: dict[str, list[PortCall]] = defaultdict(list)
+    calls_by_voyage: dict[str, list[PortCall]] = defaultdict(list)
+    for call in sorted(calls, key=lambda item: (item.voyage_id, item.order)):
+        calls_by_voyage[call.voyage_id].append(call)
+        if call.is_real_port:
+            real_ports_by_voyage[call.voyage_id].append(call)
     geojson_root = data_dir / "geojson"
     for row in sheet.iter_rows(min_row=2, values_only=True):
         if not any(value is not None for value in row):
@@ -165,12 +181,30 @@ def _route_data(
         shutil.copy2(source, public_geojson)
         day_from = int(row[headers["Dzien_od"]])
         day_to = int(row[headers["Dzien_do"]])
+        voyage_id = str(row[headers["Rejs_ID"]])
+        leg_number = int(row[headers["Etap_nr"]])
+        real_ports = real_ports_by_voyage.get(voyage_id, [])
+        if leg_number < 1 or leg_number >= len(real_ports):
+            raise ValueError(
+                f"Etap {leg_number} rejsu {voyage_id}: brak odpowiadających wizyt w Porty"
+            )
+        start_call = real_ports[leg_number - 1]
+        end_call = real_ports[leg_number]
+        if (
+            str(row[headers["Port_start"]]) != start_call.port
+            or str(row[headers["Port_koniec"]]) != end_call.port
+        ):
+            raise ValueError(
+                f"Etap {leg_number} rejsu {voyage_id} nie odpowiada kolejności Porty"
+            )
         leg = {
-            "voyageId": str(row[headers["Rejs_ID"]]),
-            "number": int(row[headers["Etap_nr"]]),
+            "voyageId": voyage_id,
+            "number": leg_number,
             "name": str(row[headers["Nazwa_etapu"]]),
             "startPort": str(row[headers["Port_start"]]),
             "endPort": str(row[headers["Port_koniec"]]),
+            "startVisitId": _visit_id(start_call),
+            "endVisitId": _visit_id(end_call),
             "days": str(row[headers["Zakres_dni"]]),
             "travelDays": day_to - day_from + 1,
             "distanceNm": row[headers["Dystans_nm"]],
@@ -178,22 +212,37 @@ def _route_data(
             "coordinates": coordinates,
         }
         legs.append(leg)
-        leg_by_port[leg["startPort"].casefold()] = leg
+        start_base = base_by_visit[(start_call.voyage_id, start_call.order)]
+        start_base["leg"] = leg
+        start_base["baseFraction"] = 0.0
+        for call in calls_by_voyage[voyage_id]:
+            if (
+                call.is_route_point
+                and start_call.order < call.order < end_call.order
+            ):
+                fraction = _fraction_at_position(coordinates, [call.lat, call.lon])
+                point_base = base_by_visit[(call.voyage_id, call.order)]
+                point_base["leg"] = leg
+                point_base["baseFraction"] = fraction
 
     voyage_rows = [
         {"id": item.voyage_id, "name": item.name, "color": _leaflet_color(item.route_color)}
         for item in voyages.values()
     ]
-    return {"voyages": voyage_rows, "ports": ports, "legs": legs}, leg_by_port
+    return {
+        "voyages": voyage_rows,
+        "ports": ports,
+        "routePoints": route_points,
+        "legs": legs,
+    }, dict(bases_by_name)
 
 
 def _media_data(
     media_path: Path,
     rejsy_path: Path,
-    leg_by_port: dict[str, dict[str, object]],
+    bases_by_name: dict[str, list[dict[str, object]]],
 ) -> dict[str, object]:
-    _, calls = load_input(rejsy_path)
-    ports = {call.port.casefold(): call for call in calls}
+    load_input(rejsy_path)
     workbook = load_workbook(media_path, data_only=True, read_only=True)
     if "Filmy" not in workbook.sheetnames:
         raise ValueError("Brak arkusza Filmy w media.xlsx")
@@ -218,41 +267,63 @@ def _media_data(
         match = MEDIA_ID.fullmatch(media_id)
         if not match:
             raise ValueError(f"Filmy, wiersz {excel_row}: niepoprawny Film_ID {media_id}")
-        port = ports.get(match.group(1).casefold())
-        if port is None:
-            raise ValueError(f"Filmy, wiersz {excel_row}: nieznany port w {media_id}")
+        media_base_name = match.group(1)
+        bases = bases_by_name.get(_name_key(media_base_name), [])
+        if not bases:
+            raise ValueError(
+                f"Filmy, wiersz {excel_row}: nieznany port lub punkt trasy w {media_id}"
+            )
         description = str(row[headers["Opis"]] or "").strip()
         url = str(row[headers["URL_Google_Drive"]] or "").strip()
         parsed_url = urlparse(url)
         if not description or parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
             raise ValueError(f"Filmy, wiersz {excel_row}: brak opisu lub niepoprawny URL")
         day = _day_value(row[headers["Dzien_od_portu"]], excel_row)
-        if day == 0:
-            position = [port.lat, port.lon]
-            at_sea = False
-        else:
-            leg = leg_by_port.get(port.port.casefold())
-            if leg is None:
-                raise ValueError(
-                    f"Filmy, wiersz {excel_row}: po porcie {port.port} nie ma etapu"
-                )
-            travel_days = float(leg["travelDays"])
-            if day > travel_days:
-                raise ValueError(
-                    f"Filmy, wiersz {excel_row}: Dzien_od_portu przekracza czas etapu"
-                )
-            position = _point_along(leg["coordinates"], day / travel_days)
-            at_sea = True
-        result.append({
-            "id": media_id,
-            "port": port.port,
-            "description": description,
-            "url": url,
-            "dayFromPort": day,
-            "atSea": at_sea,
-            "position": position,
-        })
+        # Media są własnością nazwy lokalizacji. Każda wizyta o tej nazwie
+        # otrzymuje ten sam komplet mediów; historyczna Kolejnosc_wizyty jest
+        # celowo ignorowana i nie wiąże danych z numeracją Porty.
+        for base in bases:
+            call = base["call"]
+            if day == 0:
+                position = [call.lat, call.lon]
+                at_sea = call.call_type == "Punkt_trasy_ukryty"
+            else:
+                leg = base["leg"]
+                if leg is None:
+                    raise ValueError(
+                        f"Filmy, wiersz {excel_row}: po {call.port} nie ma etapu"
+                    )
+                travel_days = float(leg["travelDays"])
+                base_time = travel_days * float(base["baseFraction"])
+                media_time = base_time + day
+                if travel_days <= 0 or media_time > travel_days:
+                    raise ValueError(
+                        f"Filmy, wiersz {excel_row}: Dzien_od_portu przekracza czas etapu"
+                    )
+                position = _point_along(leg["coordinates"], media_time / travel_days)
+                at_sea = True
+            result.append({
+                "id": media_id,
+                "port": call.port,
+                "base": call.port,
+                "baseType": call.call_type or "Port",
+                "baseVisitId": _visit_id(call),
+                "visitOrder": call.order,
+                "description": description,
+                "url": url,
+                "dayFromPort": day,
+                "atSea": at_sea,
+                "position": position,
+            })
     return {"media": result}
+
+
+def _name_key(value: str) -> str:
+    return value.strip().casefold()
+
+
+def _visit_id(call: PortCall) -> str:
+    return f"{call.voyage_id}:{call.order}"
 
 
 def _day_value(value: object, excel_row: int) -> float:
@@ -290,6 +361,23 @@ def _point_along(coordinates: list[list[float]], fraction: float) -> list[float]
             ]
         travelled += length
     return list(coordinates[-1])
+
+
+def _fraction_at_position(
+    coordinates: list[list[float]], position: list[float]
+) -> float:
+    lengths = [
+        _haversine(coordinates[index - 1], coordinates[index])
+        for index in range(1, len(coordinates))
+    ]
+    total = sum(lengths)
+    if total <= 0:
+        raise ValueError("GeoJSON etapu ma zerową długość")
+    closest_index = min(
+        range(len(coordinates)),
+        key=lambda index: _haversine(coordinates[index], position),
+    )
+    return sum(lengths[:closest_index]) / total
 
 
 def _haversine(start: list[float], end: list[float]) -> float:
